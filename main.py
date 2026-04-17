@@ -16,6 +16,8 @@ from typing import Optional
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 
 from talent_pipeline import run_pipeline, list_jobs
@@ -43,7 +45,13 @@ app.add_middleware(
 # Routes
 # ---------------------------------------------------------------------------
 
-@app.get("/", tags=["Health"])
+@app.get("/", tags=["UI"], include_in_schema=False)
+def serve_ui():
+    """Serve the frontend UI."""
+    return FileResponse("static/index.html")
+
+
+@app.get("/health", tags=["Health"])
 def health():
     return {
         "status": "ok",
