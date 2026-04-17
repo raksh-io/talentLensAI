@@ -338,7 +338,8 @@ export default function RecruiterDashboard() {
     setCandidates(prev => prev.filter(c => c._id !== id))
     
     try {
-      await fetch(`/recruiter/candidates/${id}`, { method: 'DELETE' })
+      const res = await fetch(`/recruiter/candidates/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Delete failed')
     } catch { 
       setCandidates(previous) // Revert on failure
       setBoardError('Cannot delete candidate.') 
@@ -378,10 +379,13 @@ export default function RecruiterDashboard() {
     const previous = [...candidates]
     setCandidates([])
     
-    try { await fetch('/recruiter/candidates', { method: 'DELETE' }) }
+    try { 
+      const res = await fetch('/recruiter/candidates', { method: 'DELETE' }) 
+      if (!res.ok) throw new Error('Clear failed')
+    }
     catch { 
       setCandidates(previous) // Revert on failure
-      setBoardError('Cannot reach server.') 
+      setBoardError('Cannot reach server or clear failed.') 
     }
   }
 

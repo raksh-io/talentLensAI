@@ -15,8 +15,7 @@ export default defineConfig({
       '/analyze': 'http://localhost:8000',
       '/jobs': 'http://localhost:8000',
       '/health': 'http://localhost:8000',
-      '/recruiter/candidates': 'http://localhost:8000',
-      '/recruiter/create-job': 'http://localhost:8000',
+      '/recruiter': 'http://localhost:8000',
     }
   }
 })

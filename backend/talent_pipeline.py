@@ -365,55 +365,68 @@ def run_pipeline(
     portfolio_skills: list[str] = []
     extra_skills: list[str] = []  # skills found from portfolio, not in resume
 
-    # --- GitHub scraping (optional) ---
-    if github_url:
+    # --- Parallel Scraping (GitHub + Portfolio) ---
+    import concurrent.futures
+
+    scraped_gh_projects = []
+    scraped_port_projects = []
+
+    def _safe_scrape_github(url):
         try:
             from github_scraper import scrape_github
-            logger.info(f"Scraping GitHub: {github_url}")
-            gh_data = scrape_github(github_url)
-            github_username      = gh_data.get("username", "")
-            github_top_languages = gh_data.get("top_languages", [])
-
-            scraped_projects = gh_data.get("projects", [])
-            existing_names   = {p["name"].lower() for p in projects}
-            for repo in scraped_projects:
-                if repo["name"].lower() not in existing_names:
-                    projects.append(repo)
-                    existing_names.add(repo["name"].lower())
-
-            logger.info(
-                f"GitHub: @{github_username} | "
-                f"{len(scraped_projects)} repos scraped | "
-                f"top langs: {github_top_languages}"
-            )
+            return scrape_github(url)
         except Exception as e:
-            logger.warning(f"GitHub scraping failed (continuing without it): {e}")
+            logger.warning(f"GitHub scraping failed: {e}")
+            return None
 
-    # --- Portfolio scraping (optional) ---
-    if portfolio_url:
+    def _safe_scrape_portfolio(url):
         try:
             from portfolio_scraper import scrape_portfolio
-            logger.info(f"Scraping portfolio: {portfolio_url}")
-            port_data = scrape_portfolio(portfolio_url)
-            portfolio_skills = port_data.get("skills", [])
-
-            # Merge portfolio projects
-            existing_names = {p["name"].lower() for p in projects}
-            for proj in port_data.get("projects", []):
-                if proj["name"].lower() not in existing_names:
-                    projects.append(proj)
-                    existing_names.add(proj["name"].lower())
-
-            logger.info(
-                f"Portfolio: {len(portfolio_skills)} skills, "
-                f"{len(port_data.get('projects', []))} projects extracted"
-            )
+            return scrape_portfolio(url)
         except Exception as e:
-            logger.warning(f"Portfolio scraping failed (continuing without it): {e}")
+            logger.warning(f"Portfolio scraping failed: {e}")
+            return None
 
-    # --- Stage 1: Resume Analysis ---
-    logger.info("Stage 1: Analyzing resume...")
-    resume_data = analyze_resume(file_bytes, filename)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+        f_gh = executor.submit(_safe_scrape_github, github_url) if github_url else None
+        f_port = executor.submit(_safe_scrape_portfolio, portfolio_url) if portfolio_url else None
+        f_resume = executor.submit(analyze_resume, file_bytes, filename)
+
+        # --- Process GitHub data ---
+        if f_gh:
+            gh_data = f_gh.result()
+            if gh_data:
+                github_username      = gh_data.get("username", "")
+                github_top_languages = gh_data.get("top_languages", [])
+                scraped_gh_projects  = gh_data.get("projects", [])
+                
+                # Merge GitHub projects
+                existing_names = {p["name"].lower() for p in projects}
+                for repo in scraped_gh_projects:
+                    if repo["name"].lower() not in existing_names:
+                        projects.append(repo)
+                        existing_names.add(repo["name"].lower())
+
+                logger.info(f"GitHub: @{github_username} | {len(scraped_gh_projects)} repos scraped")
+
+        # --- Process Portfolio data ---
+        if f_port:
+            port_data = f_port.result()
+            if port_data:
+                portfolio_skills = port_data.get("skills", [])
+                scraped_port_projects = port_data.get("projects", [])
+                
+                # Merge portfolio projects
+                existing_names = {p["name"].lower() for p in projects}
+                for proj in scraped_port_projects:
+                    if proj["name"].lower() not in existing_names:
+                        projects.append(proj)
+                        existing_names.add(proj["name"].lower())
+
+                logger.info(f"Portfolio: {len(portfolio_skills)} skills, {len(scraped_port_projects)} projects extracted")
+
+        logger.info("Stage 1: Analyzing resume (in parallel)...")
+        resume_data = f_resume.result()
 
     candidate_skills = resume_data.get("skills", [])
 
@@ -433,7 +446,7 @@ def run_pipeline(
     education  = resume_data.get("education", [])
 
     # Candidate name: try first line of resume (basic heuristic)
-    candidate_name = _infer_name(file_bytes, filename)
+    candidate_name = _infer_name(resume_data.get("raw_text", ""))
 
     logger.info(f"  Found {len(candidate_skills)} skills, "
                 f"{len(experience)} exp entries, {len(education)} education entries")
@@ -533,14 +546,14 @@ def run_pipeline(
 # Helper
 # ---------------------------------------------------------------------------
 
-def _infer_name(file_bytes: bytes, filename: str) -> str:
+def _infer_name(text: str) -> str:
     """
     Best-effort: extract candidate name from first non-empty line of résumé.
     Falls back to 'Candidate' if the line looks like a section header or email.
     """
     try:
-        from resume_analyzer import extract_text
-        text = extract_text(file_bytes, filename)
+        if not text:
+            return "Candidate"
         for line in text.splitlines():
             line = line.strip()
             if not line:

@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Union
 
 logger = logging.getLogger(__name__)
+_SKILLS_REGEX = None
 
 # ---------------------------------------------------------------------------
 # SKILLS KNOWLEDGE BASE
@@ -236,11 +237,18 @@ def extract_skills(text: str) -> list[str]:
     found: set[str] = set()
 
     # Rule 1: keyword match (whole-word, case-insensitive) against SKILLS_KB
-    for skill_lower, skill_proper in ALL_SKILLS_LOWER.items():
-        # Use word-boundary regex so "C" doesn't match inside "Cisco"
-        pattern = re.compile(r"\b" + re.escape(skill_lower) + r"\b", re.IGNORECASE)
-        if pattern.search(text):
-            found.add(skill_proper)
+    # OPTIMIZED: Use a single combined regex for O(M) search instead of O(N*M)
+    global _SKILLS_REGEX
+    if _SKILLS_REGEX is None:
+        # Sort by length descending to ensure "C++" matches before "C"
+        sorted_keys = sorted(ALL_SKILLS_LOWER.keys(), key=len, reverse=True)
+        pattern_str = r"\b(" + "|".join(re.escape(k) for k in sorted_keys) + r")\b"
+        _SKILLS_REGEX = re.compile(pattern_str, re.IGNORECASE)
+
+    for match in _SKILLS_REGEX.finditer(text):
+        skill_lower = match.group(0).lower()
+        if skill_lower in ALL_SKILLS_LOWER:
+            found.add(ALL_SKILLS_LOWER[skill_lower])
 
     # Rule 2: spaCy NER — picks up tech names the keyword list might miss
     try:
@@ -530,6 +538,7 @@ def analyze(file_bytes: bytes, filename: str) -> dict:
         "skills":     skills,
         "experience": experience,
         "education":  education,
+        "raw_text":   raw_text,
     }
 
 

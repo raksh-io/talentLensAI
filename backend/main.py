@@ -53,6 +53,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ---------------------------------------------------------------------------
+# Background Model Pre-warming
+# ---------------------------------------------------------------------------
+import threading
+
+def prewarm_models():
+    """Load heavy models in a separate thread so startup is fast but first-call is ready."""
+    try:
+        from resume_analyzer import _get_spacy_model
+        from pipeline.matcher.skill_matcher import SkillMatcher
+        
+        # 1. Load spaCy
+        _get_spacy_model()
+        
+        # 2. Load Sentence Transformer
+        matcher = SkillMatcher()
+        matcher._get_model()
+    except Exception as e:
+        pass
+
+@app.on_event("startup")
+def startup_event():
+    # Start pre-warming in background
+    threading.Thread(target=prewarm_models, daemon=True).start()
+
 
 # ---------------------------------------------------------------------------
 # Routes

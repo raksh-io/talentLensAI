@@ -56,9 +56,7 @@ class SkillMatcher:
     - "ML" ↔ "Machine Learning"
     - "k8s" ↔ "Kubernetes"
 
-    Usage:
-        matcher = SkillMatcher()
-        result = matcher.match(skill_profile, job_profile)
+    Optimized: Candidate embeddings are calculated ONCE per analysis.
     """
 
     def __init__(
@@ -77,21 +75,29 @@ class SkillMatcher:
     def match(self, skill_profile, job_profile) -> MatchResult:
         """
         Match candidate skills against job requirements.
-
-        Args:
-            skill_profile: SkillProfile instance
-            job_profile: JobProfile instance
-
-        Returns:
-            MatchResult with matched/unmatched skills and scores.
         """
         candidate_skills = skill_profile.skill_names()  # lowercase list
-
         result = MatchResult()
+
+        if not candidate_skills:
+            result.unmatched_required = list(job_profile.required_skills)
+            result.unmatched_nice_to_have = list(job_profile.nice_to_have_skills)
+            return result
+
+        # --- OPTIMIZATION: Pre-calculate candidate embeddings ONCE ---
+        candidate_embs = None
+        try:
+            model = self._get_model()
+            import numpy as np
+            candidate_embs = model.encode(candidate_skills, convert_to_numpy=True)
+            # Normalize for cosine similarity
+            candidate_embs = candidate_embs / (np.linalg.norm(candidate_embs, axis=1, keepdims=True) + 1e-8)
+        except Exception as e:
+            logger.warning(f"Failed to pre-calculate embeddings: {e}. Falling back to rule-based only.")
 
         # Match required skills
         for job_skill in job_profile.required_skills:
-            score, matched = self._best_match(job_skill, candidate_skills)
+            score, matched = self._best_match_optimized(job_skill, candidate_skills, candidate_embs)
             result.required_scores[job_skill] = score
             if matched:
                 result.matched_required.append(job_skill)
@@ -100,7 +106,7 @@ class SkillMatcher:
 
         # Match nice-to-have
         for job_skill in job_profile.nice_to_have_skills:
-            _, matched = self._best_match(job_skill, candidate_skills)
+            _, matched = self._best_match_optimized(job_skill, candidate_skills, candidate_embs)
             if matched:
                 result.matched_nice_to_have.append(job_skill)
             else:
@@ -121,7 +127,7 @@ class SkillMatcher:
         """Lazy-load the sentence-transformers model."""
         if self._model is None:
             try:
-                from sentence_transformers import SentenceTransformer
+                from sentence_transformers import SentenceTransformer  # type: ignore
             except ImportError as e:
                 raise ImportError(
                     "sentence-transformers is required. "
@@ -131,40 +137,36 @@ class SkillMatcher:
             self._model = SentenceTransformer(self.model_name)
         return self._model
 
-    def _best_match(
-        self, job_skill: str, candidate_skills: list[str]
+    def _best_match_optimized(
+        self, 
+        job_skill: str, 
+        candidate_skills: list[str],
+        candidate_embs: Optional[any] = None
     ) -> tuple[float, bool]:
         """
         Find the best matching candidate skill for a job skill.
-
-        Returns:
-            (best_score, is_matched) where is_matched is True if score >= threshold.
+        Used pre-calculated candidate embeddings if available.
         """
-        if not candidate_skills:
-            return 0.0, False
-
-        # Fast path: exact or substring match (case-insensitive)
+        # 1. Fast path: exact or substring match (case-insensitive)
         js_lower = job_skill.lower()
         for cs in candidate_skills:
             if js_lower == cs or js_lower in cs or cs in js_lower:
                 return 1.0, True
 
-        # Semantic match via embeddings
-        try:
-            import numpy as np
+        # 2. Semantic match via pre-calculated embeddings
+        if candidate_embs is not None:
+            try:
+                import numpy as np
+                model = self._get_model()
+                job_emb = model.encode([job_skill], convert_to_numpy=True)
+                job_norm = job_emb / (np.linalg.norm(job_emb, axis=1, keepdims=True) + 1e-8)
+                
+                # Cosine similarity using dot product (already normalized)
+                scores = (job_norm @ candidate_embs.T).flatten()
+                best_score = float(scores.max())
 
-            model = self._get_model()
-            job_emb = model.encode([job_skill], convert_to_numpy=True)
-            cand_embs = model.encode(candidate_skills, convert_to_numpy=True)
+                return best_score, best_score >= self.threshold
+            except Exception as e:
+                logger.debug(f"Semantic match failed for '{job_skill}': {e}")
 
-            # Cosine similarity
-            job_norm = job_emb / (np.linalg.norm(job_emb, axis=1, keepdims=True) + 1e-8)
-            cand_norm = cand_embs / (np.linalg.norm(cand_embs, axis=1, keepdims=True) + 1e-8)
-            scores = (job_norm @ cand_norm.T).flatten()
-            best_score = float(scores.max())
-
-            return best_score, best_score >= self.threshold
-
-        except Exception as e:
-            logger.warning(f"Semantic matching failed for '{job_skill}': {e}. Falling back to 0.")
-            return 0.0, False
+        return 0.0, False
