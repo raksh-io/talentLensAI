@@ -1,0 +1,9 @@
+{
+  "id": "android_developer",
+  "title": "Android Developer",
+  "description": "Build native Android applications with a focus on performance and UX.",
+  "required_skills": ["Kotlin", "Android SDK", "Java", "REST APIs", "Git"],
+  "nice_to_have_skills": ["Jetpack Compose", "Firebase", "MVVM", "Room", "Coroutines"],
+  "min_experience_years": 1,
+  "domains": ["Mobile", "Android", "Native"]
+}

@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TalentLens AI — Sign In</title>
+  <meta name="description" content="Sign in to TalentLens AI — the fully offline AI-powered talent intelligence platform." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #060910;
+      --surface:     rgba(14,18,32,.85);
+      --surface2:    rgba(20,24,40,.9);
+      --border:      rgba(255,255,255,.07);
+      --border-glow: rgba(108,99,255,.35);
+      --accent:      #6c63ff;
+      --accent2:     #00d4aa;
+      --accent3:     #f472b6;
+      --accent-g:    linear-gradient(135deg, #6c63ff 0%, #00d4aa 100%);
+      --rec-g:       linear-gradient(135deg, #f472b6 0%, #fb923c 100%);
+      --text:        #e8eaf6;
+      --muted:       #7b82a0;
+      --radius:      20px;
+      --radius-sm:   12px;
+      --good:        #22c55e;
+      --poor:        #ef4444;
+    }
+
+    html { scroll-behavior: smooth; height: 100%; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ═══════════════════════════════════
+       CANVAS BACKGROUND
+    ═══════════════════════════════════ */
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ═══════════════════════════════════
+       RADIAL BLOBS
+    ═══════════════════════════════════ */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: .18;
+      pointer-events: none;
+      z-index: 0;
+      animation: blobDrift 12s ease-in-out infinite alternate;
+    }
+    .blob-1 { width: 520px; height: 520px; background: var(--accent); top: -100px; left: -150px; animation-delay: 0s; }
+    .blob-2 { width: 420px; height: 420px; background: var(--accent2); bottom: -80px; right: -100px; animation-delay: -4s; }
+    .blob-3 { width: 300px; height: 300px; background: var(--accent3); top: 40%; left: 55%; animation-delay: -8s; }
+    @keyframes blobDrift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 20px) scale(1.07); }
+    }
+
+    /* ═══════════════════════════════════
+       GRID OVERLAY
+    ═══════════════════════════════════ */
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(108,99,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ═══════════════════════════════════
+       LAYOUT
+    ═══════════════════════════════════ */
+    .page {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 520px;
+      padding: 1.5rem 1.25rem 3rem;
+      animation: pageIn .6s cubic-bezier(.16,1,.3,1) both;
+    }
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Slide out for page transitions */
+    .page.slide-out {
+      animation: pageOut .4s cubic-bezier(.4,0,1,1) both;
+    }
+    @keyframes pageOut {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(-24px); }
+    }
+
+    /* ═══════════════════════════════════
+       LOGO
+    ═══════════════════════════════════ */
+    .logo-wrap {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .logo-icon-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px; height: 60px;
+      border-radius: 18px;
+      background: var(--accent-g);
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 40px rgba(108,99,255,.4);
+      animation: logoFloat 3.5s ease-in-out infinite;
+    }
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-6px) rotate(3deg); }
+    }
+    .logo-title {
+      font-size: 1.9rem;
+      font-weight: 900;
+      background: var(--accent-g);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -.03em;
+    }
+    .logo-sub {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-top: .4rem;
+      letter-spacing: .02em;
+    }
+
+    /* ═══════════════════════════════════
+       STEP INDICATOR
+    ═══════════════════════════════════ */
+    .steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+      margin-bottom: 2rem;
+    }
+    .step-dot {
+      width: 8px; height: 8px;
+      border-radius: 999px;
+      background: var(--border);
+      transition: all .4s cubic-bezier(.4,0,.2,1);
+    }
+    .step-dot.active {
+      width: 28px;
+      background: var(--accent-g);
+    }
+    .step-dot.done {
+      background: var(--accent2);
+    }
+
+    /* ═══════════════════════════════════
+       ROLE SELECTION CARDS
+    ═══════════════════════════════════ */
+    .role-heading {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+    .role-heading h2 { font-size: 1.35rem; font-weight: 700; }
+    .role-heading p  { font-size: .88rem; color: var(--muted); margin-top: .35rem; }
+
+    .role-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 400px) { .role-cards { grid-template-columns: 1fr; } }
+
+    .role-card {
+      position: relative;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem 1.25rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all .3s cubic-bezier(.4,0,.2,1);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+    .role-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity .35s;
+      border-radius: inherit;
+    }
+    .role-card.candidate-card::before {
+      background: linear-gradient(135deg, rgba(108,99,255,.12) 0%, rgba(0,212,170,.08) 100%);
+    }
+    .role-card.recruiter-card::before {
+      background: linear-gradient(135deg, rgba(244,114,182,.12) 0%, rgba(251,146,60,.08) 100%);
+    }
+    .role-card:hover {
+      transform: translateY(-4px);
+    }
+    .role-card.candidate-card:hover {
+      border-color: rgba(108,99,255,.5);
+      box-shadow: 0 8px 40px rgba(108,99,255,.2), 0 0 0 1px rgba(108,99,255,.15);
+    }
+    .role-card.recruiter-card:hover {
+      border-color: rgba(244,114,182,.5);
+      box-shadow: 0 8px 40px rgba(244,114,182,.2), 0 0 0 1px rgba(244,114,182,.15);
+    }
+    .role-card:hover::before { opacity: 1; }
+    .role-card:active { transform: translateY(0) scale(.97); }
+
+    .role-card .rc-icon {
+      font-size: 2.4rem;
+      margin-bottom: .9rem;
+      display: block;
+      position: relative;
+      z-index: 1;
+      animation: iconBounce 2.5s ease-in-out infinite;
+    }
+    .role-card:nth-child(2) .rc-icon { animation-delay: -.7s; }
+    @keyframes iconBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    .role-card .rc-title {
+      font-size: 1rem;
+      font-weight: 700;
+      position: relative; z-index: 1;
+      margin-bottom: .35rem;
+    }
+    .role-card.candidate-card .rc-title { color: #a5a0ff; }
+    .role-card.recruiter-card .rc-title { color: #f9a8d4; }
+    .role-card .rc-desc {
+      font-size: .78rem;
+      color: var(--muted);
+      line-height: 1.55;
+      position: relative; z-index: 1;
+    }
+    .rc-badge {
+      display: inline-block;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      padding: .18rem .6rem;
+      border-radius: 999px;
+      margin-top: .7rem;
+      position: relative; z-index: 1;
+    }
+    .candidate-card .rc-badge {
+      background: rgba(108,99,255,.15);
+      color: #a5a0ff;
+      border: 1px solid rgba(108,99,255,.25);
+    }
+    .recruiter-card .rc-badge {
+      background: rgba(244,114,182,.15);
+      color: #f9a8d4;
+      border: 1px solid rgba(244,114,182,.25);
+    }
+
+    /* selection glow ring */
+    .role-card.selected {
+      transform: translateY(-4px);
+    }
+    .role-card.selected::before { opacity: 1; }
+    .role-card.candidate-card.selected {
+      border-color: rgba(108,99,255,.7);
+      box-shadow: 0 0 0 3px rgba(108,99,255,.2), 0 12px 48px rgba(108,99,255,.25);
+    }
+    .role-card.recruiter-card.selected {
+      border-color: rgba(244,114,182,.7);
+      box-shadow: 0 0 0 3px rgba(244,114,182,.2), 0 12px 48px rgba(244,114,182,.25);
+    }
+    .rc-check {
+      position: absolute;
+      top: .75rem; right: .75rem;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem;
+      opacity: 0;
+      transform: scale(.5);
+      transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .candidate-card .rc-check { background: var(--accent-g); }
+    .recruiter-card .rc-check { background: var(--rec-g); }
+    .role-card.selected .rc-check { opacity: 1; transform: scale(1); }
+
+    /* ═══════════════════════════════════
+       AUTH FORM PANEL
+    ═══════════════════════════════════ */
+    .auth-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 24px 80px rgba(0,0,0,.5);
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      transition: background .4s;
+    }
+    .auth-panel.mode-candidate::before { background: var(--accent-g); }
+    .auth-panel.mode-recruiter::before { background: var(--rec-g); }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: 1.75rem;
+    }
+    .panel-role-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .mode-candidate .panel-role-icon { background: linear-gradient(135deg, rgba(108,99,255,.2), rgba(0,212,170,.15)); }
+    .mode-recruiter .panel-role-icon { background: linear-gradient(135deg, rgba(244,114,182,.2), rgba(251,146,60,.15)); }
+    .panel-header h3 { font-size: 1.1rem; font-weight: 700; }
+    .panel-header p  { font-size: .78rem; color: var(--muted); margin-top: .1rem; }
+
+    /* mode toggle */
+    .mode-toggle {
+      display: flex;
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      padding: 3px;
+      margin-bottom: 1.75rem;
+      gap: 3px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: .6rem;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .25s;
+    }
+    .mode-btn.active {
+      background: var(--accent-g);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(108,99,255,.35);
+    }
+    .auth-panel.mode-recruiter .mode-btn.active {
+      background: var(--rec-g);
+      box-shadow: 0 2px 12px rgba(244,114,182,.35);
+    }
+
+    /* form fields */
+    .field { margin-bottom: 1.15rem; }
+    .field label {
+      display: block;
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: .45rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+    .field-wrap {
+      position: relative;
+    }
+    .field-icon {
+      position: absolute;
+      left: .95rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      pointer-events: none;
+      opacity: .5;
+    }
+    .field input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: .9rem;
+      padding: .75rem .95rem .75rem 2.75rem;
+      transition: border-color .2s, background .2s, box-shadow .2s;
+      outline: none;
+    }
+    .field input::placeholder { color: var(--muted); opacity: .55; }
+    .field input:focus {
+      border-color: var(--accent);
+      background: rgba(108,99,255,.04);
+      box-shadow: 0 0 0 3px rgba(108,99,255,.12);
+    }
+    .auth-panel.mode-recruiter .field input:focus {
+      border-color: var(--accent3);
+      background: rgba(244,114,182,.04);
+      box-shadow: 0 0 0 3px rgba(244,114,182,.12);
+    }
+
+    /* password toggle */
+    .pw-toggle {
+      position: absolute;
+      right: .95rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .9rem;
+      padding: .2rem;
+      transition: color .2s;
+    }
+    .pw-toggle:hover { color: var(--text); }
+
+    /* forgot / register links */
+    .field-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.45rem;
+    }
+    .link-btn {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: color .2s;
+      padding: 0;
+    }
+    .link-btn.accent-link { color: #a5a0ff; }
+    .link-btn.accent-link:hover { color: var(--accent2); }
+    .mode-recruiter .link-btn.accent-link { color: #f9a8d4; }
+    .mode-recruiter .link-btn.accent-link:hover { color: #fb923c; }
+    .remember-wrap { display: flex; align-items: center; gap: .45rem; font-size: .8rem; color: var(--muted); cursor: pointer; }
+    .remember-wrap input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+
+    /* CTA Button */
+    .btn-cta {
+      width: 100%;
+      padding: .95rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .2s, opacity .2s;
+      letter-spacing: .02em;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+    .btn-cta::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background .2s;
+    }
+    .btn-cta:hover::after { background: rgba(255,255,255,.07); }
+    .btn-cta:hover:not(:disabled) { transform: translateY(-2px); }
+    .btn-cta:active:not(:disabled) { transform: translateY(0); }
+    .btn-cta:disabled { opacity: .55; cursor: not-allowed; }
+    .auth-panel.mode-candidate .btn-cta {
+      background: var(--accent-g);
+      box-shadow: 0 4px 24px rgba(108,99,255,.4);
+    }
+    .auth-panel.mode-candidate .btn-cta:hover:not(:disabled) {
+      box-shadow: 0 8px 36px rgba(108,99,255,.55);
+    }
+    .auth-panel.mode-recruiter .btn-cta {
+      background: var(--rec-g);
+      box-shadow: 0 4px 24px rgba(244,114,182,.4);
+    }
+    .auth-panel.mode-recruiter .btn-cta:hover:not(:disabled) {
+      box-shadow: 0 8px 36px rgba(244,114,182,.55);
+    }
+
+    /* Ripple on button */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,.3);
+      transform: scale(0);
+      animation: rippleAnim .6s linear;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* divider */
+    .divider {
+      display: flex; align-items: center; gap: .75rem;
+      margin-bottom: 1.25rem;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: var(--border);
+    }
+    .divider span { font-size: .75rem; color: var(--muted); white-space: nowrap; }
+
+    /* Social buttons */
+    .social-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: 1.25rem; }
+    .btn-social {
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      padding: .7rem;
+      border-radius: var(--radius-sm);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: .84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-social:hover { border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.04); transform: translateY(-1px); }
+    .btn-social .s-icon { font-size: 1rem; }
+
+    /* bottom switch */
+    .switch-row {
+      text-align: center;
+      font-size: .83rem;
+      color: var(--muted);
+    }
+
+    /* Error + success */
+    .form-msg {
+      display: none;
+      padding: .75rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: .84rem;
+      margin-bottom: 1.1rem;
+      animation: fadeUp .3s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .form-msg.error {
+      background: rgba(239,68,68,.1);
+      border: 1px solid rgba(239,68,68,.25);
+      color: #fca5a5;
+    }
+    .form-msg.success {
+      background: rgba(34,197,94,.1);
+      border: 1px solid rgba(34,197,94,.25);
+      color: #86efac;
+    }
+
+    /* ═══════════════════════════════════
+       SPINNER inside button
+    ═══════════════════════════════════ */
+    .btn-spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: .4rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ═══════════════════════════════════
+       ANIMATED PARTICLES (canvas)
+    ═══════════════════════════════════ */
+
+    /* ═══════════════════════════════════
+       BACK BUTTON
+    ═══════════════════════════════════ */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: .84rem;
+      cursor: pointer;
+      padding: 0;
+      margin-bottom: 1.5rem;
+      transition: color .2s, transform .2s;
+    }
+    .back-btn:hover { color: var(--text); transform: translateX(-3px); }
+  </style>
+</head>
+<body>
+
+<!-- Canvas → particle system -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- Animated blobs -->
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<!-- Grid overlay -->
+<div class="grid-overlay"></div>
+
+
+<!-- ═══════════════════════════════════════════
+     STEP 1 — ROLE SELECTION
+═══════════════════════════════════════════ -->
+<div class="page" id="stepRole">
+
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <div class="logo-icon-wrap">🔍</div>
+    <div class="logo-title">TalentLens AI</div>
+    <div class="logo-sub">We don’t match resumes — we match skills.</div>
+  </div>
+
+  <!-- Step indicator: 2 steps -->
+  <div class="steps">
+    <div class="step-dot active" id="dot0"></div>
+    <div class="step-dot" id="dot1"></div>
+  </div>
+
+  <!-- Role cards -->
+  <div class="role-heading">
+    <h2>Who are you?</h2>
+    <p>Pick your role to get a tailored experience.</p>
+  </div>
+
+  <div class="role-cards">
+    <div class="role-card candidate-card" id="roleCandidate" onclick="selectRole('candidate')" role="button" tabindex="0" aria-label="Select Candidate role">
+      <span class="rc-check">✓</span>
+      <span class="rc-icon">👤</span>
+      <div class="rc-title">Candidate</div>
+      <div class="rc-desc">Submit your resume and get an instant AI-powered fit score.</div>
+      <span class="rc-badge">Job Seeker</span>
+    </div>
+    <div class="role-card recruiter-card" id="roleRecruiter" onclick="selectRole('recruiter')" role="button" tabindex="0" aria-label="Select Recruiter role">
+      <span class="rc-check">✓</span>
+      <span class="rc-icon">🏢</span>
+      <div class="rc-title">Recruiter</div>
+      <div class="rc-desc">Post jobs, review applicants, and build your talent pipeline.</div>
+      <span class="rc-badge">Hiring Manager</span>
+    </div>
+  </div>
+
+  <button class="btn-cta" id="roleNextBtn"
+    style="background:rgba(108,99,255,.25);box-shadow:none;color:var(--muted);cursor:not-allowed;"
+    disabled onclick="goToAuth()">
+    Continue →
+  </button>
+
+  <div class="switch-row" style="margin-top:.5rem;">
+    <span>Already know what you're doing?</span>
+    <button class="link-btn accent-link" onclick="goToAuth()" style="margin-left:.35rem;">Skip &amp; sign in</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     STEP 2 — AUTH FORM (hidden initially)
+═══════════════════════════════════════════ -->
+<div class="page" id="stepAuth" style="display:none;">
+
+  <button class="back-btn" onclick="goBack()">← Back</button>
+
+  <!-- Logo (smaller) -->
+  <div class="logo-wrap" style="margin-bottom:1.75rem;">
+    <div class="logo-icon-wrap" style="width:46px;height:46px;font-size:1.3rem;box-shadow:none;animation:none;">🔍</div>
+    <div class="logo-title" style="font-size:1.5rem;">TalentLens AI</div>
+  </div>
+
+  <!-- Step dots -->
+  <div class="steps" style="margin-bottom:1.75rem;">
+    <div class="step-dot done" id="dot0b"></div>
+    <div class="step-dot active" id="dot1b"></div>
+  </div>
+
+  <!-- Auth Card -->
+  <div class="auth-panel mode-candidate" id="authPanel">
+
+    <!-- Panel header (role badge) -->
+    <div class="panel-header">
+      <div class="panel-role-icon" id="panelIcon">👤</div>
+      <div>
+        <h3 id="panelTitle">Welcome, Candidate</h3>
+        <p id="panelSub">Sign in to your account to continue</p>
+      </div>
+    </div>
+
+    <!-- Sign In / Sign Up toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="signinBtn" onclick="setAuthMode('signin')">Sign In</button>
+      <button class="mode-btn" id="signupBtn" onclick="setAuthMode('signup')">Sign Up</button>
+    </div>
+
+    <!-- Messages -->
+    <div class="form-msg error" id="formError"></div>
+    <div class="form-msg success" id="formSuccess"></div>
+
+    <!-- Sign-up only: Name field -->
+    <div class="field" id="nameField" style="display:none;">
+      <label>Full Name</label>
+      <div class="field-wrap">
+        <span class="field-icon">👤</span>
+        <input type="text" id="nameInput" placeholder="Jane Doe" autocomplete="name" />
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="field">
+      <label>Email Address</label>
+      <div class="field-wrap">
+        <span class="field-icon">✉️</span>
+        <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" />
+      </div>
+    </div>
+
+    <!-- Password -->
+    <div class="field">
+      <label>Password</label>
+      <div class="field-wrap">
+        <span class="field-icon">🔒</span>
+        <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password" />
+        <button type="button" class="pw-toggle" onclick="togglePw()" id="pwToggle" aria-label="Toggle password visibility">👁</button>
+      </div>
+    </div>
+
+    <!-- Sign-up only: Confirm password -->
+    <div class="field" id="confirmField" style="display:none;">
+      <label>Confirm Password</label>
+      <div class="field-wrap">
+        <span class="field-icon">🔒</span>
+        <input type="password" id="confirmInput" placeholder="••••••••" autocomplete="new-password" />
+      </div>
+    </div>
+
+    <!-- Remember / Forgot (sign-in only) -->
+    <div class="field-row" id="rememberRow">
+      <label class="remember-wrap">
+        <input type="checkbox" id="rememberMe" /> Remember me
+      </label>
+      <button class="link-btn accent-link" onclick="handleForgot()">Forgot password?</button>
+    </div>
+
+    <!-- CTA -->
+    <button class="btn-cta" id="authCta" onclick="handleAuth(event)">Sign In</button>
+
+    <!-- Divider -->
+    <div class="divider"><span>or continue with</span></div>
+
+    <!-- Social (demo buttons) -->
+    <div class="social-row">
+      <button class="btn-social" onclick="socialLogin('google')">
+        <span class="s-icon">🌐</span> Google
+      </button>
+      <button class="btn-social" onclick="socialLogin('github')">
+        <span class="s-icon">🐙</span> GitHub
+      </button>
+    </div>
+
+    <!-- Switch mode -->
+    <div class="switch-row" id="switchRow">
+      <span id="switchText">Don't have an account?</span>
+      <button class="link-btn accent-link" id="switchBtn" onclick="setAuthMode('signup')" style="margin-left:.35rem;">Sign Up</button>
+    </div>
+  </div>
+
+</div><!-- /stepAuth -->
+
+
+<script>
+/* ══════════════════════════════════════
+   PARTICLE CANVAS
+══════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H, particles;
+
+  const COLORS = ['#6c63ff','#00d4aa','#f472b6','#a5f3fc','#c4b5fd'];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    if (!particles) initParticles();
+  }
+
+  function initParticles() {
+    particles = Array.from({ length: 70 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.8 + .5,
+      vx: (Math.random() - .5) * .35,
+      vy: (Math.random() - .5) * .35,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      alpha: Math.random() * .35 + .08,
+    }));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach((p, i) => {
+      // Move
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+
+      // Draw dot
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color.replace(')', `,${p.alpha})`).replace('rgb','rgba').replace('#','rgba(').replace(/(.{2})(.{2})(.{2})/, (_, r, g, b) => `${parseInt(r,16)},${parseInt(g,16)},${parseInt(b,16)}`);
+      // Simpler approach:
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Connect nearby
+      for (let j = i + 1; j < particles.length; j++) {
+        const q = particles[j];
+        const dx = p.x - q.x, dy = p.y - q.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 110) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(q.x, q.y);
+          ctx.strokeStyle = p.color;
+          ctx.globalAlpha = (1 - dist / 110) * .07;
+          ctx.lineWidth = .6;
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+      }
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  draw();
+})();
+
+
+/* ══════════════════════════════════════
+   ROLE SELECTION
+══════════════════════════════════════ */
+let selectedRole = null;
+
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('roleCandidate').classList.toggle('selected', role === 'candidate');
+  document.getElementById('roleRecruiter').classList.toggle('selected', role === 'recruiter');
+
+  const btn = document.getElementById('roleNextBtn');
+  if (role === 'candidate') {
+    btn.style.background = 'linear-gradient(135deg, #6c63ff, #00d4aa)';
+    btn.style.boxShadow  = '0 4px 24px rgba(108,99,255,.4)';
+    btn.style.color      = '#fff';
+    btn.style.cursor     = 'pointer';
+  } else {
+    btn.style.background = 'linear-gradient(135deg, #f472b6, #fb923c)';
+    btn.style.boxShadow  = '0 4px 24px rgba(244,114,182,.4)';
+    btn.style.color      = '#fff';
+    btn.style.cursor     = 'pointer';
+  }
+  btn.disabled = false;
+
+  // keyboard support
+  document.querySelectorAll('.role-card').forEach(c => {
+    c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') c.click(); });
+  });
+}
+
+function goToAuth() {
+  const stepRole = document.getElementById('stepRole');
+  const stepAuth = document.getElementById('stepAuth');
+
+  stepRole.classList.add('slide-out');
+  setTimeout(() => {
+    stepRole.style.display = 'none';
+    stepRole.classList.remove('slide-out');
+    stepAuth.style.display = 'block';
+    stepAuth.style.animation = 'none';
+    requestAnimationFrame(() => {
+      stepAuth.style.animation = '';
+    });
+
+    // Apply role theming
+    applyRoleTheme(selectedRole || 'candidate');
+  }, 380);
+}
+
+function goBack() {
+  const stepRole = document.getElementById('stepRole');
+  const stepAuth = document.getElementById('stepAuth');
+  stepAuth.classList.add('slide-out');
+  setTimeout(() => {
+    stepAuth.style.display = 'none';
+    stepAuth.classList.remove('slide-out');
+    stepRole.style.display = 'block';
+    stepRole.style.animation = 'none';
+    requestAnimationFrame(() => { stepRole.style.animation = ''; });
+  }, 380);
+}
+
+function applyRoleTheme(role) {
+  const panel = document.getElementById('authPanel');
+  const icon  = document.getElementById('panelIcon');
+  const title = document.getElementById('panelTitle');
+  const sub   = document.getElementById('panelSub');
+
+  panel.classList.remove('mode-candidate','mode-recruiter');
+  if (role === 'recruiter') {
+    panel.classList.add('mode-recruiter');
+    icon.textContent  = '🏢';
+    title.textContent = 'Welcome, Recruiter';
+    sub.textContent   = 'Sign in to manage your talent pipeline';
+  } else {
+    panel.classList.add('mode-candidate');
+    icon.textContent  = '👤';
+    title.textContent = 'Welcome, Candidate';
+    sub.textContent   = 'Sign in to your account to continue';
+  }
+}
+
+
+/* ══════════════════════════════════════
+   AUTH FORM
+══════════════════════════════════════ */
+let authMode = 'signin'; // 'signin' | 'signup'
+
+function setAuthMode(mode) {
+  authMode = mode;
+  const isSignup = mode === 'signup';
+
+  // Toggle buttons
+  document.getElementById('signinBtn').classList.toggle('active', !isSignup);
+  document.getElementById('signupBtn').classList.toggle('active', isSignup);
+
+  // Show/hide fields
+  document.getElementById('nameField').style.display    = isSignup ? 'block' : 'none';
+  document.getElementById('confirmField').style.display = isSignup ? 'block' : 'none';
+  document.getElementById('rememberRow').style.display  = isSignup ? 'none'  : 'flex';
+
+  document.getElementById('authCta').textContent = isSignup ? 'Create Account' : 'Sign In';
+  document.getElementById('switchText').textContent = isSignup ? 'Already have an account?' : "Don't have an account?";
+  document.getElementById('switchBtn').textContent  = isSignup ? 'Sign In' : 'Sign Up';
+  document.getElementById('switchBtn').onclick = () => setAuthMode(isSignup ? 'signin' : 'signup');
+
+  document.getElementById('passwordInput').autocomplete = isSignup ? 'new-password' : 'current-password';
+
+  clearMessages();
+}
+
+function togglePw() {
+  const inp = document.getElementById('passwordInput');
+  const btn = document.getElementById('pwToggle');
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  btn.textContent = show ? '🙈' : '👁';
+}
+
+function showMsg(type, msg) {
+  const el  = document.getElementById(type === 'error' ? 'formError' : 'formSuccess');
+  const other = document.getElementById(type === 'error' ? 'formSuccess' : 'formError');
+  other.style.display = 'none';
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function clearMessages() {
+  document.getElementById('formError').style.display   = 'none';
+  document.getElementById('formSuccess').style.display = 'none';
+}
+
+async function handleAuth(event) {
+  clearMessages();
+
+  const email    = document.getElementById('emailInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+  const name     = document.getElementById('nameInput').value.trim();
+  const confirm  = document.getElementById('confirmInput').value;
+  const role     = selectedRole || 'candidate';
+
+  // Validation
+  if (!email || !email.includes('@')) { showMsg('error', 'Please enter a valid email address.'); return; }
+  if (password.length < 6)            { showMsg('error', 'Password must be at least 6 characters.'); return; }
+  if (authMode === 'signup') {
+    if (!name) { showMsg('error', 'Please enter your full name.'); return; }
+    if (password !== confirm) { showMsg('error', 'Passwords do not match.'); return; }
+  }
+
+  // Ripple on button
+  const btn = document.getElementById('authCta');
+  createRipple(event, btn);
+
+  // Loading state
+  const origText = btn.textContent;
+  btn.disabled    = true;
+  btn.innerHTML   = `<span class="btn-spinner"></span>${authMode === 'signup' ? 'Creating account…' : 'Signing in…'}`;
+
+  // ── Demo: simulated delay + localStorage auth ──
+  await new Promise(r => setTimeout(r, 900));
+
+  try {
+    if (authMode === 'signup') {
+      // In a real app, call a register API.
+      localStorage.setItem('tl_user', JSON.stringify({ name, email, role }));
+      showMsg('success', `Account created! Welcome, ${name.split(' ')[0]} 🎉`);
+      await new Promise(r => setTimeout(r, 900));
+    } else {
+      // Demo: any credential works; in production, verify with backend.
+      const stored = localStorage.getItem('tl_user');
+      const user   = stored ? JSON.parse(stored) : { name: email.split('@')[0], email, role };
+      localStorage.setItem('tl_user', JSON.stringify({ ...user, role }));
+      showMsg('success', `Welcome back! Redirecting…`);
+      await new Promise(r => setTimeout(r, 700));
+    }
+
+    // Redirect based on role
+    redirectToDashboard(role);
+  } catch(err) {
+    showMsg('error', 'Something went wrong. Please try again.');
+  } finally {
+    btn.disabled   = false;
+    btn.textContent = origText;
+  }
+}
+
+function redirectToDashboard(role) {
+  const page = document.querySelector('.page:not([style*="none"])') || document.getElementById('stepAuth');
+  page.classList.add('slide-out');
+  setTimeout(() => {
+    // Navigate to dedicated role page
+    window.location.href = role === 'recruiter' ? '/recruiter' : '/candidate';
+  }, 380);
+}
+
+function handleForgot() {
+  showMsg('success', '📬 If that email exists, a reset link will be sent (demo mode — no email sent).');
+}
+
+async function socialLogin(provider) {
+  showMsg('success', `${provider === 'google' ? '🌐 Google' : '🐙 GitHub'} login is not connected in offline mode. Use email to continue.`);
+}
+
+function createRipple(event, btn) {
+  const rect   = btn.getBoundingClientRect();
+  const size   = Math.max(rect.width, rect.height);
+  const x      = (event.clientX || rect.left + rect.width / 2) - rect.left - size / 2;
+  const y      = (event.clientY || rect.top + rect.height / 2) - rect.top - size / 2;
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple';
+  ripple.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px;`;
+  btn.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 700);
+}
+
+/* Keyboard: Enter on role cards */
+document.querySelectorAll('.role-card').forEach(c => {
+  c.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); c.click(); }
+  });
+});
+
+/* ── Auto-apply role from URL hash on page load ── */
+const urlRole = new URLSearchParams(window.location.search).get('role');
+if (urlRole === 'candidate' || urlRole === 'recruiter') {
+  selectRole(urlRole);
+}
+
+/* ── If already logged in, add logout link ── */
+const stored = localStorage.getItem('tl_user');
+if (stored) {
+  try {
+    const user = JSON.parse(stored);
+    const note = document.createElement('div');
+    note.style.cssText = 'text-align:center;font-size:.78rem;color:var(--muted);margin-top:1rem;position:relative;z-index:1;';
+    note.innerHTML = `Signed in as <strong style="color:var(--text)">${user.name || user.email}</strong>
+      &nbsp;·&nbsp;
+      <button onclick="localStorage.removeItem('tl_user');location.reload();"
+        style="background:none;border:none;color:#a5a0ff;font-size:.78rem;cursor:pointer;font-family:inherit;">
+        Sign out
+      </button>
+      &nbsp;·&nbsp;
+      <a href="/${user.role === 'recruiter' ? 'recruiter' : 'candidate'}" style="color:#a5a0ff;text-decoration:none;font-size:.78rem;">Go to Dashboard →</a>`;
+    document.getElementById('stepRole').appendChild(note);
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

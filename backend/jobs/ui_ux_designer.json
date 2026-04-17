@@ -1,0 +1,9 @@
+{
+  "id": "ui_ux_designer",
+  "title": "UI/UX Designer",
+  "description": "Create intuitive, beautiful, and accessible product designs.",
+  "required_skills": ["Figma", "UI Design", "User Research", "Prototyping", "Wireframing"],
+  "nice_to_have_skills": ["Adobe XD", "CSS", "Design Systems", "Usability Testing", "Framer"],
+  "min_experience_years": 1,
+  "domains": ["Design", "UI/UX", "Product"]
+}

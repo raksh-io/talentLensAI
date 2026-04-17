@@ -1,0 +1,9 @@
+{
+  "id": "product_manager",
+  "title": "Product Manager",
+  "description": "Define product vision, roadmap, and drive cross-functional execution.",
+  "required_skills": ["Product Strategy", "Agile", "User Research", "Roadmapping", "Stakeholder Management"],
+  "nice_to_have_skills": ["SQL", "Jira", "A/B Testing", "Go-to-Market", "OKRs"],
+  "min_experience_years": 2,
+  "domains": ["Product", "Management", "Strategy"]
+}

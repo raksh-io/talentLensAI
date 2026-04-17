@@ -1,0 +1,9 @@
+{
+  "id": "frontend_engineer",
+  "title": "Frontend Engineer",
+  "description": "Build modern, responsive web interfaces and user experiences.",
+  "required_skills": ["React", "JavaScript", "HTML", "CSS", "TypeScript"],
+  "nice_to_have_skills": ["Next.js", "Tailwind CSS", "Redux", "GraphQL", "Webpack"],
+  "min_experience_years": 1,
+  "domains": ["Frontend", "Web Development", "UI/UX"]
+}

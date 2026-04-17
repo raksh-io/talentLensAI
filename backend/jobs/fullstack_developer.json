@@ -1,0 +1,9 @@
+{
+  "id": "fullstack_developer",
+  "title": "Full Stack Developer",
+  "description": "Develop end-to-end web applications across frontend and backend.",
+  "required_skills": ["JavaScript", "Node.js", "React", "SQL", "REST APIs", "Git"],
+  "nice_to_have_skills": ["TypeScript", "Docker", "MongoDB", "Redis", "AWS"],
+  "min_experience_years": 2,
+  "domains": ["Full Stack", "Web Development", "Backend", "Frontend"]
+}

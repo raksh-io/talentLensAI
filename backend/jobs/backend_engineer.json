@@ -1,0 +1,9 @@
+{
+  "id": "backend_engineer",
+  "title": "Backend Engineer",
+  "description": "Build and maintain scalable server-side APIs and microservices.",
+  "required_skills": ["Python", "REST APIs", "SQL", "Git", "Linux", "Docker"],
+  "nice_to_have_skills": ["Kubernetes", "Redis", "gRPC", "PostgreSQL", "FastAPI"],
+  "min_experience_years": 1,
+  "domains": ["Backend", "API Development", "Microservices"]
+}

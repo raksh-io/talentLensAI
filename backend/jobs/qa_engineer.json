@@ -1,0 +1,9 @@
+{
+  "id": "qa_engineer",
+  "title": "QA Engineer",
+  "description": "Ensure software quality through manual and automated testing strategies.",
+  "required_skills": ["Test Automation", "Selenium", "Python", "API Testing", "Bug Tracking"],
+  "nice_to_have_skills": ["Cypress", "Jest", "Postman", "CI/CD", "Performance Testing"],
+  "min_experience_years": 1,
+  "domains": ["QA", "Testing", "Software Quality"]
+}

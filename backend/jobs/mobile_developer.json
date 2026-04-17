@@ -1,0 +1,9 @@
+{
+  "id": "mobile_developer",
+  "title": "Mobile App Developer",
+  "description": "Build cross-platform or native mobile applications for iOS and Android.",
+  "required_skills": ["React Native", "JavaScript", "TypeScript", "Git", "REST APIs"],
+  "nice_to_have_skills": ["Swift", "Kotlin", "Firebase", "Redux", "Expo"],
+  "min_experience_years": 1,
+  "domains": ["Mobile", "iOS", "Android", "React Native"]
+}

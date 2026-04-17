@@ -1,0 +1,9 @@
+{
+  "id": "blockchain_developer",
+  "title": "Blockchain Developer",
+  "description": "Develop decentralized applications and smart contracts on blockchain platforms.",
+  "required_skills": ["Solidity", "Ethereum", "Web3.js", "JavaScript", "Smart Contracts"],
+  "nice_to_have_skills": ["Hardhat", "IPFS", "DeFi", "Rust", "TypeScript"],
+  "min_experience_years": 1,
+  "domains": ["Blockchain", "Web3", "DeFi", "Smart Contracts"]
+}

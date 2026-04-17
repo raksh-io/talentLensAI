@@ -1,0 +1,9 @@
+{
+  "id": "cloud_engineer",
+  "title": "Cloud Engineer",
+  "description": "Design, deploy, and manage cloud infrastructure and services.",
+  "required_skills": ["AWS", "Terraform", "Linux", "Docker", "CI/CD", "Python"],
+  "nice_to_have_skills": ["GCP", "Azure", "Ansible", "Kubernetes", "CloudFormation"],
+  "min_experience_years": 2,
+  "domains": ["Cloud", "Infrastructure", "DevOps", "AWS"]
+}

@@ -1,0 +1,9 @@
+{
+  "id": "cybersecurity_analyst",
+  "title": "Cybersecurity Analyst",
+  "description": "Protect systems, networks, and data from security threats and breaches.",
+  "required_skills": ["Network Security", "Linux", "Python", "SIEM", "Incident Response"],
+  "nice_to_have_skills": ["Penetration Testing", "Splunk", "OWASP", "AWS", "Forensics"],
+  "min_experience_years": 1,
+  "domains": ["Security", "Cybersecurity", "Networking"]
+}

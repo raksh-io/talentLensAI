@@ -1,0 +1,9 @@
+{
+  "id": "machine_learning_engineer",
+  "title": "Machine Learning Engineer",
+  "description": "Design, train, and deploy machine learning models at scale.",
+  "required_skills": ["Python", "Machine Learning", "TensorFlow", "PyTorch", "SQL", "NumPy"],
+  "nice_to_have_skills": ["Spark", "Kubernetes", "MLflow", "AWS SageMaker", "Scikit-learn"],
+  "min_experience_years": 2,
+  "domains": ["Machine Learning", "AI", "Data Science"]
+}

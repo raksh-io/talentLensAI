@@ -1,0 +1,13 @@
+{
+  "id": "custom_frontend_developer",
+  "title": "Frontend Developer",
+  "description": "",
+  "required_skills": [
+    "React",
+    "Tailwind"
+  ],
+  "nice_to_have_skills": [],
+  "soft_skills": [],
+  "min_experience_years": 2.0,
+  "domains": []
+}

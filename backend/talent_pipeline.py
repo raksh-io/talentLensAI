@@ -38,10 +38,16 @@ JOBS_DIR = Path(__file__).parent / "jobs"
 # ---------------------------------------------------------------------------
 
 def load_job(job_id: str) -> dict:
-    """Load a job profile JSON from the /jobs directory."""
+    """Load a job profile JSON from the /jobs directory (or jobs/custom/ for recruiter-created jobs)."""
     path = JOBS_DIR / f"{job_id}.json"
     if not path.exists():
-        available = [f.stem for f in JOBS_DIR.glob("*.json")]
+        # Also look in the custom subdirectory
+        path = JOBS_DIR / "custom" / f"{job_id}.json"
+    if not path.exists():
+        available = (
+            [f.stem for f in JOBS_DIR.glob("*.json")]
+            + [f.stem for f in (JOBS_DIR / "custom").glob("*.json") if (JOBS_DIR / "custom").exists()]
+        )
         raise ValueError(f"Job '{job_id}' not found. Available: {available}")
     return json.loads(path.read_text(encoding="utf-8"))
 
