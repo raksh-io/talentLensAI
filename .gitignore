@@ -33,6 +33,7 @@ desktop.ini
 
 # Logs
 *.log
+backend/server_log.txt
 
 # Uploaded resume files (if any temp storage)
 uploads/

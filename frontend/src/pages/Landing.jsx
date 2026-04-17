@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { BackgroundPaths } from '@/components/ui/background-paths'
+import { motion } from 'framer-motion'
 
 /* Background removed for SaaS aesthetic */
 
@@ -19,7 +20,7 @@ export default function Landing() {
   ]
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-x-hidden">
       {/* Background blobs (enhanced) */}
       <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] rounded-full opacity-40 pointer-events-none z-0"
         style={{ background: 'radial-gradient(circle, #f5f3ff 0%, transparent 70%)' }} />
@@ -46,7 +47,7 @@ export default function Landing() {
             </>
           ) : (
             <Link to="/signin"
-              className="px-4 py-2 text-sm font-semibold rounded-lg border border-slate-300 text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-all bg-white shadow-sm">
+              className="px-4 py-2 text-sm font-semibold rounded-lg text-white transition-all bg-blue-600 hover:bg-blue-700 shadow-sm">
               Sign In
             </Link>
           )}
@@ -56,7 +57,8 @@ export default function Landing() {
       {/* Hero with BackgroundPaths */}
       <section className="relative z-10 pt-10 pb-16">
         <BackgroundPaths 
-          title="Talent Intelligence" 
+          title="TalentLensAI" 
+          tagline="We don't match resumes — we match skills."
           onStarted={() => navigate('/signin')} 
         />
       </section>
@@ -69,10 +71,17 @@ export default function Landing() {
             { label: 'Fit Score Accuracy', value: '95%', color: '#2563eb' },
             { label: 'Avg Analysis Time', value: '<3s', color: '#10b981' },
           ].map((s, i) => (
-            <div key={i} className="saas-card p-6 text-center animate-fade-up" style={{ animationDelay: `${0.1 * i}s` }}>
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className="saas-card p-6 text-center"
+            >
               <div className="text-3xl font-black mb-1" style={{ color: s.color }}>{s.value}</div>
               <div className="text-xs text-slate-500 font-medium">{s.label}</div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -83,13 +92,17 @@ export default function Landing() {
         <p className="text-slate-600 text-center mb-12 text-sm">Built for speed, precision, and total privacy.</p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {features.map((f, i) => (
-            <div key={i}
+            <motion.div key={i}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
               className="saas-card p-6 group transition-all hover:-translate-y-1 hover:shadow-md border border-slate-200 bg-white"
-              style={{ animationDelay: `${0.1 * i}s` }}>
+            >
               <div className="text-3xl mb-3">{f.icon}</div>
               <h3 className="text-slate-900 font-bold text-sm mb-2">{f.title}</h3>
               <p className="text-slate-600 text-xs leading-relaxed">{f.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -121,7 +134,13 @@ export default function Landing() {
               </div>
             </div>
             <div className="relative">
-              <div className="saas-card p-8 bg-white shadow-2xl animate-fade-up">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6 }}
+                className="saas-card p-8 bg-white shadow-2xl"
+              >
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl">👤</div>
                   <div>
@@ -139,11 +158,17 @@ export default function Landing() {
                     <div className="h-6 bg-blue-50 rounded-md"></div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
               {/* Floating element */}
-              <div className="absolute -bottom-6 -right-6 saas-card p-4 bg-white shadow-lg animate-pulse" style={{ animationDuration: '3s' }}>
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="absolute -bottom-6 -right-6 saas-card p-4 bg-white shadow-lg animate-float"
+              >
                 <span className="text-emerald-500 font-bold">Strong Fit ✨</span>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>

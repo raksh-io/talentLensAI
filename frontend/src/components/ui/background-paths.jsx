@@ -20,7 +20,7 @@ function FloatingPaths({ position }) {
     return (
         <div className="absolute inset-0 pointer-events-none">
             <svg
-                className="w-full h-full text-slate-950 dark:text-white"
+                className="w-full h-full text-slate-950"
                 viewBox="0 0 696 316"
                 fill="none"
             >
@@ -50,7 +50,7 @@ function FloatingPaths({ position }) {
     );
 }
 
-export function BackgroundPaths({ title = "Background Paths", onStarted }) {
+export function BackgroundPaths({ title = "Background Paths", tagline, onStarted }) {
     const words = title.split(" ");
 
     return (
@@ -65,51 +65,63 @@ export function BackgroundPaths({ title = "Background Paths", onStarted }) {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 2 }}
-                    className="max-w-4xl mx-auto"
+                    className="max-w-5xl mx-auto flex flex-col items-center"
                 >
-                    <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 tracking-tighter">
-                        {words.map((word, wordIndex) => (
-                            <span
-                                key={wordIndex}
-                                className="inline-block mr-4 last:mr-0"
+                    <div className="inline-block px-8 py-10 md:px-16 md:py-12 mb-10 bg-gradient-to-br from-white/70 to-blue-200/40 backdrop-blur-[12px] border border-[rgba(255,255,255,0.3)] shadow-[0_10px_30px_rgba(0,0,0,0.08)] rounded-[2.5rem]">
+                        <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-6 tracking-tighter">
+                            {words.map((word, wordIndex) => (
+                                <span
+                                    key={wordIndex}
+                                    className="inline-block mr-4 last:mr-0"
+                                >
+                                    {word.split("").map((letter, letterIndex) => (
+                                        <motion.span
+                                            key={`${wordIndex}-${letterIndex}`}
+                                            initial={{ y: 100, opacity: 0 }}
+                                            animate={{ y: 0, opacity: 1 }}
+                                            transition={{
+                                                delay:
+                                                    wordIndex * 0.1 +
+                                                    letterIndex * 0.03,
+                                                type: "spring",
+                                                stiffness: 150,
+                                                damping: 25,
+                                            }}
+                                            className="inline-block text-transparent bg-clip-text 
+                                            bg-gradient-to-r from-blue-700 to-teal-500"
+                                        >
+                                            {letter}
+                                        </motion.span>
+                                    ))}
+                                </span>
+                            ))}
+                        </h1>
+
+                        {tagline && (
+                            <motion.p
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.5, duration: 0.8 }}
+                                className="text-lg md:text-xl font-bold text-blue-600 max-w-2xl mx-auto"
                             >
-                                {word.split("").map((letter, letterIndex) => (
-                                    <motion.span
-                                        key={`${wordIndex}-${letterIndex}`}
-                                        initial={{ y: 100, opacity: 0 }}
-                                        animate={{ y: 0, opacity: 1 }}
-                                        transition={{
-                                            delay:
-                                                wordIndex * 0.1 +
-                                                letterIndex * 0.03,
-                                            type: "spring",
-                                            stiffness: 150,
-                                            damping: 25,
-                                        }}
-                                        className="inline-block text-transparent bg-clip-text 
-                                        bg-gradient-to-r from-neutral-900 to-neutral-700/80 
-                                        dark:from-white dark:to-white/80"
-                                    >
-                                        {letter}
-                                    </motion.span>
-                                ))}
-                            </span>
-                        ))}
-                    </h1>
+                                {tagline}
+                            </motion.p>
+                        )}
+                    </div>
 
                     <div
                         className="inline-block group relative bg-gradient-to-b from-black/10 to-white/10 
-                        dark:from-white/10 dark:to-black/10 p-px rounded-2xl backdrop-blur-lg 
+                        p-px rounded-2xl backdrop-blur-lg 
                         overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
                     >
                         <Button
                             variant="ghost"
                             onClick={onStarted}
                             className="rounded-[1.15rem] px-8 py-6 text-lg font-semibold backdrop-blur-md 
-                            bg-white/95 hover:bg-white/100 dark:bg-black/95 dark:hover:bg-black/100 
-                            text-black dark:text-white transition-all duration-300 
-                            group-hover:-translate-y-0.5 border border-black/10 dark:border-white/10
-                            hover:shadow-md dark:hover:shadow-neutral-800/50"
+                            bg-slate-200 hover:bg-slate-300 
+                            text-slate-700 transition-all duration-300 
+                            group-hover:-translate-y-0.5 border border-black/10
+                            hover:shadow-md"
                         >
                             <span className="opacity-90 group-hover:opacity-100 transition-opacity">
                                 Get Started Free

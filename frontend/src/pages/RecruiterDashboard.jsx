@@ -4,25 +4,24 @@ import { useNavigate } from 'react-router-dom'
 /* ── Topnav ── */
 function Navbar({ user, onLogout }) {
   return (
-    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3.5"
-      style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.5)' }}>
+    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3.5 backdrop-blur-3xl"
+      style={{ background: 'rgba(30, 27, 75, 0.4)', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
       <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base text-white shadow-sm"
-          style={{ background: '#2563eb' }}>🔍</div>
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base text-white shadow-lg shadow-indigo-500/20"
+          style={{ background: 'linear-gradient(135deg, #4f46e5, #14b8a6)' }}>🔍</div>
         <div>
-          <span className="font-bold text-slate-900 text-sm">TalentLens AI</span>
-          <span className="hidden sm:inline text-slate-500 text-xs ml-2">· Recruiter Dashboard</span>
+          <span className="font-black text-white text-lg tracking-tight">TalentLens AI</span>
+          <span className="hidden sm:inline text-indigo-300 text-sm ml-2 font-black uppercase tracking-widest opacity-70">Recruiter</span>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <div className="hidden sm:flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm"
-            style={{ background: '#eff6ff' }}>🏢</div>
-          <span className="text-slate-600 text-sm font-medium">{user?.name || user?.email?.split('@')[0]}</span>
-          <span className="badge badge-recruiter text-xs">Recruiter</span>
+      <div className="flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm border border-indigo-400/30"
+            style={{ background: 'rgba(20, 184, 166, 0.1)' }}>👤</div>
+          <span className="text-white text-base font-black">{user?.name || user?.email?.split('@')[0]}</span>
         </div>
         <button onClick={onLogout}
-          className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-all bg-white shadow-sm">
+          className="px-4 py-2 rounded-xl text-sm font-black text-indigo-100 hover:text-white border border-indigo-400/20 hover:border-teal-400/40 transition-all bg-indigo-900/40 backdrop-blur-md shadow-sm">
           Sign Out
         </button>
       </div>
@@ -30,7 +29,19 @@ function Navbar({ user, onLogout }) {
   )
 }
 
-/* ── Mini score ring for table ── */
+/* ── Avatar Helper ── */
+function UserAvatar({ name, size = "w-10 h-10", className = "" }) {
+  const initials = (name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+  const hues = [200, 240, 280, 320, 360, 40, 80, 120, 160]
+  const hue = hues[initials.charCodeAt(0) % hues.length]
+  return (
+    <div className={`rounded-2xl ${size} flex items-center justify-center font-black text-white shadow-lg ${className}`}
+      style={{ background: `linear-gradient(135deg, hsl(${hue}, 70%, 50%), hsl(${hue + 40}, 80%, 60%))` }}>
+      {initials}
+    </div>
+  )
+}
+
 function MiniScoreRing({ score }) {
   const r = 16; const circ = 2 * Math.PI * r
   const color = score >= 70 ? '#4ade80' : score >= 40 ? '#fbbf24' : '#f87171'
@@ -100,151 +111,179 @@ function CandidateModal({ candidate: c, onClose, onUpdate }) {
     <div className="fixed inset-0 z-50 flex items-start justify-center px-4 py-8 overflow-y-auto"
       style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-2xl saas-card animate-fade-up relative my-auto shadow-2xl">
-        <div className="absolute top-4 right-4 flex gap-2">
+      <div className="w-full max-w-2xl saas-card-recruiter animate-fade-up relative my-auto shadow-2xl border-teal-400/10">
+        <div className="absolute top-6 right-6 flex gap-3">
           {!isEditing && (
             <button onClick={() => setIsEditing(true)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 border border-slate-200 hover:border-blue-200 transition-all text-sm bg-white">
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-indigo-300 hover:text-teal-400 border border-indigo-400/20 hover:border-teal-400/40 transition-all text-base bg-indigo-900/40 backdrop-blur-md shadow-sm">
               ✏️
             </button>
           )}
           <button onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-all text-sm bg-white">
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-indigo-300 hover:text-white border border-indigo-400/20 hover:border-indigo-400/40 transition-all text-base bg-indigo-900/40 backdrop-blur-md shadow-sm">
             ✕
           </button>
         </div>
         <div className="p-6">
           {isEditing ? (
-            <div className="space-y-4 pt-4">
-              <h2 className="text-slate-900 font-bold text-lg mb-4">Edit Candidate</h2>
+            <div className="space-y-6 pt-4">
+              <h2 className="text-slate-900 font-black text-2xl mb-6">Edit Candidate</h2>
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Name</label>
-                <input className="input-field" value={name} onChange={e => setName(e.target.value)} />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Name</label>
+                <input className="input-field text-base py-3" value={name} onChange={e => setName(e.target.value)} />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Role Title</label>
-                <input className="input-field" value={title} onChange={e => setTitle(e.target.value)} />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Role Title</label>
+                <input className="input-field text-base py-3" value={title} onChange={e => setTitle(e.target.value)} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Fit Score (0-100)</label>
-                  <input className="input-field" type="number" min="0" max="100" value={score} onChange={e => setScore(parseInt(e.target.value))} />
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Fit Score (0-100)</label>
+                  <input className="input-field text-base py-3" type="number" min="0" max="100" value={score} onChange={e => setScore(parseInt(e.target.value))} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Recommendation</label>
-                  <select className="input-field" value={rec} onChange={e => setRec(e.target.value)}>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Recommendation</label>
+                  <select className="input-field text-base py-3" value={rec} onChange={e => setRec(e.target.value)}>
                     <option value="Strong Hire">Strong Hire</option>
                     <option value="Consider">Consider</option>
                     <option value="Reject">Reject</option>
                   </select>
                 </div>
               </div>
-              <div className="flex gap-2 pt-2">
-                <button onClick={handleSave} className="flex-1 bg-blue-600 text-white font-bold py-2 rounded-xl transition-all hover:bg-blue-700">Save Changes</button>
-                <button onClick={() => setIsEditing(false)} className="px-6 py-2 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50">Cancel</button>
+              <div className="flex gap-3 pt-4">
+                <button onClick={handleSave} className="flex-1 bg-teal-600 text-white font-black py-4 rounded-2xl transition-all hover:bg-teal-500 shadow-lg shadow-teal-500/20">Save Changes</button>
+                <button onClick={() => setIsEditing(false)} className="px-8 py-4 border border-indigo-400/20 text-indigo-200 font-bold rounded-2xl hover:bg-indigo-900/40">Cancel</button>
               </div>
             </div>
           ) : (
             <>
-              <h2 className="text-slate-900 font-bold text-lg mb-4 pr-16 leading-tight">
-                {c.candidate_name || 'Candidate'} · <span className="text-slate-500 font-normal text-sm">{c.job_title || c.job_id}</span>
-              </h2>
-
-          {/* Score band */}
-          <div className="flex items-center gap-5 p-4 rounded-xl mb-5"
-            style={{ background: '#f8fafc', border: '1px solid #e5e7eb' }}>
-            <div className="relative w-20 h-20 flex-shrink-0">
-              {(() => {
-                const r = 34; const circ = 2 * Math.PI * r
-                return (
-                  <svg viewBox="0 0 75 75" className="w-full h-full" style={{ transform: 'rotate(-90deg)' }}>
-                    <circle cx="37.5" cy="37.5" r={r} fill="none" stroke="#e5e7eb" strokeWidth="6" />
-                    <circle cx="37.5" cy="37.5" r={r} fill="none" stroke={scoreColor} strokeWidth="6"
-                      strokeLinecap="round"
-                      style={{ strokeDasharray: circ, strokeDashoffset: circ - (score / 100) * circ, transition: 'stroke-dashoffset 1s' }} />
-                  </svg>
-                )
-              })()}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-xl font-black" style={{ color: scoreColor }}>{score}</span>
-                <span className="text-xs text-slate-600">/100</span>
-              </div>
-            </div>
-            <div className="flex-1">
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full"
-                style={{ background: scoreBg, color: scoreColor }}>{c.score_label || score >= 70 ? 'Strong Fit' : score >= 40 ? 'Moderate Fit' : 'Weak Fit'}</span>
-              <p className="text-slate-500 text-sm mt-2">
-                Recommendation: <span className="text-slate-900 font-semibold">{c.recommendation || '-'}</span>
-              </p>
-              {c.github_username && <p className="text-slate-500 text-xs mt-1">🐙 @{c.github_username}</p>}
-              {/* Progress bars */}
-              <div className="mt-3 space-y-1.5">
-                {[['Skill Match', 'skill_match', '#8b5cf6'], ['Project Fit', 'project_relevance', '#34d399']].map(([l, k, col]) => (
-                  <div key={k}>
-                    <div className="flex justify-between text-xs text-slate-600 mb-0.5">
-                      <span>{l}</span><span style={{ color: col }}>{c.score_breakdown?.[k] || 0}%</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{ width: `${c.score_breakdown?.[k] || 0}%`, background: col }} />
-                    </div>
+              {/* Header Spotlight */}
+              <div className="flex items-center gap-6 mb-8 pt-4">
+                <UserAvatar name={c.candidate_name} size="w-24 h-24" className="text-3xl shadow-2xl" />
+                <div>
+                  <h2 className="text-white font-black text-5xl mb-2 leading-tight tracking-tighter">
+                    {c.candidate_name || 'Candidate'}
+                  </h2>
+                  <div className="flex items-center gap-3">
+                    <p className="text-teal-400 font-black text-xl tracking-tight uppercase opacity-80">{c.job_title || c.job_id}</p>
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-400/30" />
+                    <p className="text-indigo-300 font-bold text-base opacity-60">Ready for New Chapter</p>
                   </div>
-                ))}
+                </div>
               </div>
+
+              {/* Alignment Section */}
+              <div className="flex items-center gap-5 p-5 saas-card-recruiter mb-8 border-teal-400/10">
+                <div className="relative w-22 h-22 flex-shrink-0">
+                  {(() => {
+                    const r = 34; const circ = 2 * Math.PI * r
+                    return (
+                      <svg viewBox="0 0 75 75" className="w-full h-full" style={{ transform: 'rotate(-90deg)' }}>
+                        <circle cx="37.5" cy="37.5" r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" />
+                        <circle cx="37.5" cy="37.5" r={r} fill="none" stroke={scoreColor} strokeWidth="6"
+                          strokeLinecap="round"
+                          style={{ strokeDasharray: circ, strokeDashoffset: circ - (score / 100) * circ, transition: 'stroke-dashoffset 1s' }} />
+                      </svg>
+                    )
+                  })()}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-xl font-black" style={{ color: scoreColor }}>{score}</span>
+                    <span className="text-[10px] text-white/40 uppercase font-black">Score</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest bg-indigo-950 text-teal-400 border border-teal-400/20">
+                      {score >= 70 ? 'Exceptional Alignment' : score >= 40 ? 'Promising Fit' : 'Requires Growth'}
+                    </span>
+                  </div>
+                  <p className="text-indigo-100 text-sm opacity-80 leading-relaxed">
+                    Our intuitive analysis suggests a <span className="text-white font-black">{c.recommendation === 'Strong Hire' ? 'Perfect Match' : c.recommendation || 'Balanced Fit'}</span> for your team's current energy and technical needs.
+                  </p>
+                </div>
+              </div>
+
+          {/* Talent Superpowers */}
+          <div className="mb-6 p-5 saas-card-recruiter border-human-amber/20 bg-amber-500/5 glow-amber">
+            <h3 className="text-human-amber font-black text-xs uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+              <span>🌟</span> Talent Superpowers
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {(c.skills || []).slice(0, 4).map((s, i) => (
+                <span key={i} className="superpower-badge text-[10px]">{s}</span>
+              ))}
+              <span className="superpower-badge text-[10px]">Adaptability</span>
+              <span className="superpower-badge text-[10px]">Team Harmony</span>
             </div>
           </div>
 
-          {/* Explanation */}
+          {/* Explanation -> The Story So Far */}
           {c.explanation && (
-            <p className="text-slate-600 text-sm leading-relaxed p-4 rounded-xl mb-4 bg-slate-50 border border-slate-200">
-              {c.explanation}
-            </p>
+            <div className="mb-8">
+              <h3 className="text-indigo-300 font-black text-xs uppercase tracking-[0.2em] mb-3 opacity-60">The Story So Far</h3>
+              <p className="text-white/90 text-lg leading-relaxed font-medium italic border-l-4 border-teal-500/40 pl-6 py-2">
+                "{c.explanation}"
+              </p>
+            </div>
           )}
 
-          {/* Skills grids */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          {/* Potential for Growth Layout */}
+          <div className="grid grid-cols-2 gap-4 mb-8">
             {[
-              { label: '🛠 Skills', items: c.skills, variant: 'default' },
-              { label: '✅ Matched', items: c.matched_skills, variant: 'match' },
-              { label: '❌ Missing', items: c.missing_skills, variant: 'missing' },
-            ].map(({ label, items, variant }) => (
-              <div key={label} className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{label}</p>
-                <div className="flex flex-wrap gap-1">
+              { label: '🎯 Expert Focus', items: c.matched_skills, color: 'text-teal-400', bg: 'bg-teal-400/10', border: 'border-teal-400/20' },
+              { label: '🌱 Growth Zones', items: c.missing_skills, color: 'text-human-rose', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
+            ].map(({ label, items, color, bg, border }) => (
+              <div key={label} className={`p-5 rounded-2xl ${bg} border ${border}`}>
+                <p className={`text-[10px] font-black ${color} uppercase tracking-[0.2em] mb-4`}>{label}</p>
+                <div className="flex flex-wrap gap-2">
                   {(items || []).length === 0
-                    ? <span className="text-slate-400 text-xs italic">None</span>
-                    : (items || []).map((s, i) => <span key={i} className={`badge badge-${variant}`}>{s}</span>)}
+                    ? <span className="text-white/20 text-xs italic">None noted</span>
+                    : (items || []).map((s, i) => (
+                      <span key={i} className={`px-3 py-1 rounded-lg bg-white/5 ${color} text-[10px] font-black border border-current opacity-80 uppercase tracking-wider`}>
+                        {s}
+                      </span>
+                    ))}
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Exp & Edu */}
-          <div className="grid sm:grid-cols-2 gap-3">
+          {/* Career Journey Timeline */}
+          <div className="space-y-6">
             {[
-              { label: '💼 Experience', rows: (c.experience || []).filter(x => x.role), render: x => ({ title: x.role, sub: `${x.organization || ''}${x.duration ? ' · ' + x.duration : ''}` }) },
-              { label: '🎓 Education', rows: (c.education || []).filter(x => x.degree || x.institution), render: x => ({ title: `${x.degree || ''}${x.field ? ' · ' + x.field : ''}`, sub: `${x.institution || ''}${x.year ? ' · ' + x.year : ''}` }) },
-            ].map(({ label, rows, render }) => (
-              <div key={label} className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">{label}</p>
+              { label: '📂 Career Journey', rows: (c.experience || []).filter(x => x.role), icon: '💼', render: x => ({ title: x.role, sub: x.organization, detail: x.duration }) },
+              { label: '📜 Knowledge Base', rows: (c.education || []).filter(x => x.degree || x.institution), icon: '🎓', render: x => ({ title: x.degree, sub: x.institution, detail: x.year }) },
+            ].map(({ label, rows, icon, render }) => (
+              <div key={label} className="saas-card-recruiter p-6">
+                <p className="text-indigo-300 text-[10px] font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-3 opacity-60">
+                  <span>{icon}</span> {label}
+                </p>
                 {rows.length === 0
-                  ? <p className="text-slate-400 text-xs italic">None found</p>
-                  : rows.map((x, i) => {
-                    const { title, sub } = render(x)
-                    return (
-                      <div key={i} className="py-2 border-b last:border-0 border-slate-200">
-                        <p className="text-slate-900 text-xs font-semibold">{title}</p>
-                        <p className="text-slate-500 text-xs">{sub}</p>
-                      </div>
-                    )
-                  })}
+                  ? <p className="text-white/20 text-xs italic">No entries listed</p>
+                  : (
+                    <div className="space-y-6 relative ml-3 border-l-2 border-indigo-400/10 pl-8">
+                      {rows.map((x, i) => {
+                        const { title, sub, detail } = render(x)
+                        return (
+                          <div key={i} className="relative group">
+                            <div className="absolute -left-[41px] top-1.5 w-4 h-4 rounded-full bg-indigo-950 border-2 border-indigo-400/40 group-hover:border-teal-400 transition-colors" />
+                            <p className="text-white text-lg font-black leading-tight mb-1">{title}</p>
+                            <p className="text-indigo-200 text-base font-bold opacity-70">
+                              {sub} {detail && <span className="ml-2 px-2 py-0.5 bg-indigo-400/10 rounded-md text-[10px] uppercase font-black">{detail}</span>}
+                            </p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
               </div>
             ))}
           </div>
-        </>
-      )}
+            </>
+          )}
+        </div>
+      </div>
     </div>
-  </div>
-</div>
   )
 }
 
@@ -258,15 +297,15 @@ function ChipInput({ label, placeholder, chips, onChange }) {
   }
   return (
     <div>
-      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{label}</label>
-      <div className="input-field min-h-[42px] flex flex-wrap gap-1.5 cursor-text items-center"
+      <label className="block text-xs font-black text-indigo-300 uppercase tracking-[0.2em] mb-3 opacity-70">{label}</label>
+      <div className="input-field min-h-[52px] flex flex-wrap gap-2 cursor-text items-center bg-indigo-900/40 border-indigo-400/20 shadow-inner"
         onClick={e => e.currentTarget.querySelector('input')?.focus()}
-        style={{ padding: '0.4rem 0.75rem' }}>
+        style={{ padding: '0.6rem 1rem' }}>
         {chips.map((c, i) => (
-          <span key={i} className="badge badge-recruiter flex items-center gap-1">
+          <span key={i} className="px-3 py-1 bg-teal-500 text-white rounded-lg text-xs font-black flex items-center gap-2 shadow-lg shadow-teal-500/20">
             {c}
             <button type="button" onClick={() => onChange(chips.filter((_, j) => j !== i))}
-              className="opacity-60 hover:opacity-100 leading-none">×</button>
+              className="opacity-70 hover:opacity-100 leading-none text-base">×</button>
           </span>
         ))}
         <input value={val} onChange={e => setVal(e.target.value)} placeholder={chips.length === 0 ? placeholder : ''}
@@ -275,7 +314,7 @@ function ChipInput({ label, placeholder, chips, onChange }) {
             if (e.key === 'Backspace' && !val && chips.length) onChange(chips.slice(0, -1))
           }}
           onBlur={() => val.trim() && add(val)}
-          className="flex-1 min-w-[80px] bg-transparent outline-none text-slate-900 text-sm" autoComplete="off" spellCheck="false" />
+          className="flex-1 min-w-[120px] bg-transparent outline-none text-white text-base placeholder:text-indigo-300/40" autoComplete="off" spellCheck="false" />
       </div>
     </div>
   )
@@ -326,6 +365,12 @@ export default function RecruiterDashboard() {
   async function loadJobs() {
     try { const res = await fetch('/jobs'); const d = await res.json(); setJobs(d.jobs || []) } catch {}
   }
+
+  // Theme Toggler
+  useEffect(() => {
+    document.body.classList.add('theme-recruiter');
+    return () => document.body.classList.remove('theme-recruiter');
+  }, []);
 
   useEffect(() => { loadCandidates(); loadJobs() }, [])
   useEffect(() => { loadCandidates() }, [filterJob, sortBy])
@@ -425,7 +470,7 @@ export default function RecruiterDashboard() {
   const avg = total ? Math.round(candidates.reduce((s, c) => s + (c.fit_score || 0), 0) / total) : null
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen transition-colors duration-500">
       <Navbar user={user} onLogout={logout} />
 
       {selected && (
@@ -439,24 +484,23 @@ export default function RecruiterDashboard() {
         />
       )}
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
         {/* Header */}
-        <div className="mb-6 animate-fade-up">
-          <div className="flex items-start justify-between flex-wrap gap-4">
+        <div className="mb-10 animate-fade-up">
+          <div className="flex items-start justify-between flex-wrap gap-6">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 mb-1 leading-tight tracking-tight">🏢 Recruiter Dashboard</h1>
-              <p className="text-slate-600 text-sm">Manage job postings and rank candidates by fit score.</p>
+              <h1 className="text-5xl font-black text-white mb-2 leading-tight tracking-tighter">✨ Talent Spotlight</h1>
+              <p className="text-indigo-200 text-lg opacity-80 font-medium">Discover unique potential and help talent grow into their new roles.</p>
             </div>
-            {/* Stat pills */}
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex gap-4 flex-wrap">
               {[
-                { val: total, label: 'Candidates', color: '#f9a8d4' },
-                { val: strongHire, label: 'Strong Hire', color: '#4ade80' },
-                { val: avg !== null ? avg : '—', label: 'Avg Score', color: '#fbbf24' },
+                { val: total, label: 'Potential Team Members', color: '#818cf8', icon: '👤' },
+                { val: strongHire, label: 'Exceptional Matches', color: '#2dd4bf', icon: '💎' },
+                { val: avg !== null ? avg : '—', label: 'Overall Vibe', color: '#fbbf24', icon: '📈' },
               ].map((s, i) => (
-                <div key={i} className={`saas-card px-4 py-3 text-center min-w-[70px] animate-fade-up delay-${(i + 1) * 100}`}>
-                  <div className="text-xl font-black">{s.val}</div>
-                  <div className="text-xs text-slate-500 mt-0.5 font-bold uppercase tracking-tighter opacity-70">{s.label}</div>
+                <div key={i} className={`saas-card-recruiter px-8 py-6 text-center min-w-[120px] animate-fade-up delay-${(i + 1) * 100}`}>
+                  <div className="text-[10px] mb-2 opacity-60 text-indigo-300 font-black uppercase tracking-widest">{s.label}</div>
+                  <div className="text-4xl font-black text-white">{s.val}</div>
                 </div>
               ))}
             </div>
@@ -464,20 +508,20 @@ export default function RecruiterDashboard() {
         </div>
 
         {/* ── Create Job Accordion ── */}
-        <div className="saas-card mb-5 animate-fade-up delay-200 shadow-sm border border-slate-200 input-focus-card overflow-hidden">
+        <div className="saas-card-recruiter mb-10 animate-fade-up delay-200 shadow-2xl border-white/5 overflow-hidden">
           <button type="button"
-            className="w-full flex items-center justify-between px-6 py-4 text-left transition-colors hover:bg-slate-50/50"
+            className="w-full flex items-center justify-between px-8 py-6 text-left transition-colors hover:bg-indigo-400/10"
             onClick={() => {
               if (accordionOpen && editingJobId) cancelEdit()
               else setAccordionOpen(v => !v)
             }}>
-            <span className="text-slate-900 font-bold text-sm flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm shadow-sm">
+            <span className="text-white font-black text-xl flex items-center gap-4">
+              <span className="w-12 h-12 rounded-2xl bg-teal-500 text-white flex items-center justify-center text-lg shadow-lg shadow-teal-500/30">
                 {editingJobId ? '✏️' : '✨'}
               </span>
-              {editingJobId ? `Editing: ${jTitle}` : 'Create Custom Job Posting'}
+              {editingJobId ? `Editing: ${jTitle}` : 'Launch Custom Job Posting'}
             </span>
-            <span className="text-slate-400 text-sm transition-transform duration-300" style={{ transform: accordionOpen ? 'rotate(180deg)' : '' }}>▼</span>
+            <span className="text-indigo-300 text-xl transition-transform duration-300" style={{ transform: accordionOpen ? 'rotate(180deg)' : '' }}>▼</span>
           </button>
 
           {accordionOpen && (
@@ -537,38 +581,38 @@ export default function RecruiterDashboard() {
         </div>
 
         {/* ── Job Management Section ── */}
-        <div className="saas-card mb-8 animate-fade-up delay-300 overflow-hidden border border-slate-200 shadow-sm">
-          <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/30">
-            <h2 className="text-slate-900 font-bold text-sm flex items-center gap-2"><span>📂</span> Manage Custom Jobs</h2>
+        <div className="saas-card-recruiter mb-12 animate-fade-up delay-300 overflow-hidden shadow-2xl border-white/5">
+          <div className="px-8 py-6 border-b border-indigo-400/10 bg-indigo-900/20">
+            <h2 className="text-white font-black text-xl flex items-center gap-4"><span>📂</span> Manage Custom Jobs</h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-400 uppercase text-[10px] font-black tracking-widest border-b border-slate-200">
+            <table className="w-full text-left text-base">
+              <thead className="bg-indigo-950/40 text-indigo-300 uppercase text-[11px] font-black tracking-[0.2em] border-b border-indigo-400/10">
                 <tr>
-                  <th className="px-6 py-3">Job Title</th>
-                  <th className="px-6 py-3">Skills</th>
-                  <th className="px-6 py-3">Exp</th>
-                  <th className="px-6 py-3 text-right">Actions</th>
+                  <th className="px-8 py-5">Job Title</th>
+                  <th className="px-8 py-5">Skills</th>
+                  <th className="px-8 py-5">Exp</th>
+                  <th className="px-8 py-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-indigo-400/10 text-indigo-100">
                 {jobs.filter(j => j.custom).map(j => (
-                  <tr key={j.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-slate-800">{j.title}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
+                  <tr key={j.id} className="row-glow-recruiter transition-all">
+                    <td className="px-8 py-6 font-black text-white">{j.title}</td>
+                    <td className="px-8 py-6">
+                      <div className="flex flex-wrap gap-2">
                         {(j.required_skills || []).slice(0, 3).map((s, i) => (
-                          <span key={i} className="badge badge-default text-[10px]">{s}</span>
+                          <span key={i} className="px-3 py-1 bg-white/5 text-teal-400 rounded-lg text-[10px] font-black uppercase tracking-wider border border-teal-400/20">{s}</span>
                         ))}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-500 font-medium">{j.min_experience_years}y</td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => startEditJob(j)} className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Edit">
+                    <td className="px-8 py-6 text-indigo-200 font-bold">{j.min_experience_years}y</td>
+                    <td className="px-8 py-6 text-right">
+                      <div className="flex justify-end gap-3">
+                        <button onClick={() => startEditJob(j)} className="w-10 h-10 rounded-2xl flex items-center justify-center text-indigo-100 hover:text-teal-400 hover:bg-teal-400/10 transition-colors bg-white/5 border border-indigo-400/20" title="Edit">
                           ✏️
                         </button>
-                        <button onClick={() => deleteJob(j.id)} className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors" title="Delete">
+                        <button onClick={() => deleteJob(j.id)} className="w-10 h-10 rounded-2xl flex items-center justify-center text-rose-400 hover:bg-rose-400/10 transition-colors bg-white/5 border border-indigo-400/20" title="Delete">
                           🗑️
                         </button>
                       </div>
@@ -577,7 +621,7 @@ export default function RecruiterDashboard() {
                 ))}
                 {jobs.filter(j => j.custom).length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-6 py-10 text-center text-slate-400 italic">No custom jobs created yet.</td>
+                    <td colSpan={4} className="px-8 py-12 text-center text-slate-400 italic font-medium">No custom jobs created yet. Start by creating one above!</td>
                   </tr>
                 )}
               </tbody>
@@ -586,11 +630,11 @@ export default function RecruiterDashboard() {
         </div>
 
         {/* ── Leaderboard ── */}
-        <div className="saas-card animate-fade-up delay-200 shadow-sm">
+        <div className="saas-card-recruiter animate-fade-up delay-200 shadow-2xl border-white/5 overflow-hidden">
           {/* Table header bar */}
-          <div className="flex items-center justify-between flex-wrap gap-3 px-6 py-4 border-b border-slate-200">
-            <h2 className="text-slate-900 font-bold text-sm flex items-center gap-2"><span>🏆</span> Candidate Leaderboard</h2>
-            <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center justify-between flex-wrap gap-4 px-8 py-6 border-b border-indigo-400/10 bg-indigo-900/20">
+            <h2 className="text-white font-black text-xl flex items-center gap-4"><span>🤝</span> Team Prospects</h2>
+            <div className="flex items-center gap-3 flex-wrap">
               <button onClick={() => {
                 const name = prompt('Candidate Name:')
                 if (!name) return
@@ -601,26 +645,26 @@ export default function RecruiterDashboard() {
                 fd.append('job_id', jid)
                 fetch('/recruiter/candidates', { method: 'POST', body: fd })
                   .then(r => r.json())
-                  .then(d => { loadCandidates(); alert('Candidate added!') })
+                  .then(d => { loadCandidates(); alert('Prospect added!') })
               }}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all bg-emerald-500 hover:bg-emerald-600 shadow-sm shadow-emerald-200">
-                + Add Candidate
+                className="px-6 py-3 rounded-2xl text-xs font-black text-white transition-all bg-teal-600 hover:bg-teal-500 shadow-lg shadow-teal-500/30 uppercase tracking-[0.2em]">
+                + Find Harmony
               </button>
-              <select className="input-field text-xs py-1.5 px-3" style={{ width: 'auto' }} value={filterJob} onChange={e => setFilterJob(e.target.value)}>
-                <option value="">All Roles</option>
+              <select className="input-field text-[10px] py-2.5 px-6 font-black uppercase tracking-wider bg-indigo-900/40 border-indigo-400/20 text-white" style={{ width: 'auto' }} value={filterJob} onChange={e => setFilterJob(e.target.value)}>
+                <option value="">All Journeys</option>
                 {jobs.map(j => <option key={j.id} value={j.id}>{j.custom ? '✨ ' : ''}{j.title}</option>)}
               </select>
-              <select className="input-field text-xs py-1.5 px-3" style={{ width: 'auto' }} value={sortBy} onChange={e => setSortBy(e.target.value)}>
-                <option value="fit_score">Sort: Fit Score</option>
-                <option value="analyzed_at">Sort: Recent</option>
+              <select className="input-field text-[10px] py-2.5 px-6 font-black uppercase tracking-wider bg-indigo-900/40 border-indigo-400/20 text-white" style={{ width: 'auto' }} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                <option value="fit_score">Focus: Potential</option>
+                <option value="analyzed_at">Focus: Recency</option>
               </select>
               <button onClick={loadCandidates}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-all bg-white shadow-sm">
+                className="px-6 py-2.5 rounded-2xl text-xs font-black text-indigo-100 hover:text-white border border-indigo-400/20 hover:border-teal-400/40 transition-all bg-indigo-900/40 backdrop-blur-md shadow-sm">
                 ↻ Refresh
               </button>
               <button onClick={clearBoard}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all hover:bg-red-50"
-                style={{ color: '#ef4444', borderColor: '#fca5a5', background: '#fef2f2' }}>
+                className="px-6 py-2.5 rounded-2xl text-xs font-black border transition-all hover:bg-rose-500/10 backdrop-blur-md"
+                style={{ color: '#fb7185', borderColor: '#f43f5e', background: 'rgba(244, 63, 94, 0.1)' }}>
                 🗑 Clear
               </button>
             </div>
@@ -666,48 +710,42 @@ export default function RecruiterDashboard() {
                     const rankColors = ['linear-gradient(135deg,#f59e0b,#fbbf24)', 'linear-gradient(135deg,#9ca3af,#d1d5db)', 'linear-gradient(135deg,#92400e,#b45309)']
                     const rankTextColor = rank <= 3 ? '#000' : '#94a3b8'
                     return (
-                      <tr key={c._id || idx} className={`animate-fade-up row-float`} style={{ animationDelay: `${0.1 * idx}s` }}>
-                        <td>
-                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black"
-                            style={{
-                              background: rank <= 3 ? rankColors[rank - 1] : '#f1f5f9',
-                              color: rankTextColor,
-                            }}>
-                            {rank}
-                          </div>
+                      <tr key={c._id || idx} className={`animate-fade-up row-glow-recruiter transition-all`} style={{ animationDelay: `${0.05 * idx}s` }}>
+                        <td className="px-8 py-6">
+                          <UserAvatar name={c.candidate_name} />
                         </td>
-                        <td><MiniScoreRing score={c.fit_score || 0} /></td>
-                        <td>
-                          <div className="font-semibold text-slate-900 text-sm">{c.candidate_name || 'Unknown'}</div>
-                          <div className="text-xs text-slate-500 mt-0.5">
+                        <td className="px-8 py-6"><MiniScoreRing score={c.fit_score || 0} /></td>
+                        <td className="px-8 py-6">
+                          <div className="font-black text-white text-xl leading-tight">{c.candidate_name || 'Unknown'}</div>
+                          <div className="text-xs text-indigo-300 mt-1 font-black uppercase tracking-[0.2em] opacity-60">
                             {c.github_username ? `🐙 @${c.github_username}` : ''}
                             {c.github_username && c.portfolio_url ? ' · ' : ''}
-                            {c.portfolio_url ? '🌐 Portfolio' : ''}
+                            {c.portfolio_url ? '🌐 Personal Site' : ''}
                           </div>
                         </td>
-                        <td className="text-slate-400 text-xs">{c.job_title || c.job_id || '—'}</td>
-                        <td>
-                          <span className="text-xs font-bold px-2.5 py-1 rounded-full"
+                        <td className="px-8 py-6 text-teal-400 font-black text-sm tracking-tight uppercase opacity-80">{c.job_title || c.job_id || '—'}</td>
+                        <td className="px-8 py-6">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-2xl shadow-lg border border-white/5"
                             style={{ background: recBg(c.recommendation), color: recColor(c.recommendation) }}>
-                            {c.recommendation || '-'}
+                            {c.recommendation === 'Strong Hire' ? 'Perfect Match' : c.recommendation || '-'}
                           </span>
                         </td>
-                        <td>
-                          <div className="flex flex-wrap gap-1 max-w-[180px]">
+                        <td className="px-8 py-6">
+                          <div className="flex flex-wrap gap-2 max-w-[220px]">
                             {(c.skills || []).slice(0, 3).map((s, i) => (
-                              <span key={i} className="badge badge-default text-xs">{s}</span>
+                              <span key={i} className="px-3 py-1 bg-white/5 text-indigo-200 rounded-lg text-[10px] font-black border border-indigo-400/20 uppercase tracking-wider">{s}</span>
                             ))}
                           </div>
                         </td>
-                        <td>
-                          <div className="flex gap-1.5">
+                        <td className="px-8 py-6">
+                          <div className="flex gap-3">
                             <button onClick={() => setSelected(c)}
-                              className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 transition-all bg-white shadow-sm">
-                              👁 View
+                              className="px-6 py-2.5 rounded-2xl text-xs font-black border border-indigo-400/20 text-indigo-100 hover:text-white hover:border-teal-400/40 transition-all bg-indigo-900/40 backdrop-blur-md shadow-sm uppercase tracking-widest text-[10px]">
+                              👁 Meet
                             </button>
                             <button onClick={() => deleteCandidate(c._id)}
-                              className="px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all hover:bg-red-50"
-                              style={{ color: '#ef4444', borderColor: '#fca5a5', background: '#fef2f2' }}>
+                              className="w-10 h-10 flex items-center justify-center rounded-2xl text-sm border transition-all hover:bg-rose-500/10 backdrop-blur-md bg-indigo-900/40"
+                              style={{ color: '#fb7185', borderColor: 'rgba(244, 63, 94, 0.2)' }}>
                               ✕
                             </button>
                           </div>

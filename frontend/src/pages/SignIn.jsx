@@ -1,5 +1,153 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { Eye, EyeOff, ArrowRight, User, Building2, Check, Chrome } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Helper function to merge class names
+const cn = (...classes) => {
+  return classes.filter(Boolean).join(" ");
+};
+
+// Custom Button Component
+const Button = ({ 
+  children, 
+  variant = "default", 
+  className = "", 
+  ...props 
+}) => {
+  const baseStyles = "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
+  
+  const variantStyles = {
+    default: "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/20",
+    outline: "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 shadow-sm"
+  };
+  
+  return (
+    <button
+      className={cn(baseStyles, variantStyles[variant], className)}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+// Custom Input Component
+const Input = ({ className = "", ...props }) => {
+  return (
+    <input
+      className={cn(
+        "flex h-11 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2 text-sm text-slate-900 ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:border-blue-500 transition-all disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  );
+};
+
+const DotMap = () => {
+  const canvasRef = useRef(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  const routes = [
+    { start: { x: 100, y: 150, delay: 0 }, end: { x: 200, y: 80, delay: 2 }, color: "#2563eb" },
+    { start: { x: 200, y: 80, delay: 2 }, end: { x: 260, y: 120, delay: 4 }, color: "#2563eb" },
+    { start: { x: 50, y: 50, delay: 1 }, end: { x: 150, y: 180, delay: 3 }, color: "#2563eb" },
+    { start: { x: 280, y: 60, delay: 0.5 }, end: { x: 180, y: 180, delay: 2.5 }, color: "#2563eb" },
+  ];
+
+  const generateDots = (width, height) => {
+    const dots = [];
+    const gap = 12;
+    const dotRadius = 1;
+
+    for (let x = 0; x < width; x += gap) {
+      for (let y = 0; y < height; y += gap) {
+        const isInMapShape =
+          ((x < width * 0.25 && x > width * 0.05) && (y < height * 0.4 && y > height * 0.1)) ||
+          ((x < width * 0.25 && x > width * 0.15) && (y < height * 0.8 && y > height * 0.4)) ||
+          ((x < width * 0.45 && x > width * 0.3) && (y < height * 0.35 && y > height * 0.15)) ||
+          ((x < width * 0.5 && x > width * 0.35) && (y < height * 0.65 && y > height * 0.35)) ||
+          ((x < width * 0.7 && x > width * 0.45) && (y < height * 0.5 && y > height * 0.1)) ||
+          ((x < width * 0.8 && x > width * 0.65) && (y < height * 0.8 && y > height * 0.6));
+
+        if (isInMapShape && Math.random() > 0.3) {
+          dots.push({ x, y, radius: dotRadius, opacity: Math.random() * 0.5 + 0.2 });
+        }
+      }
+    }
+    return dots;
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const updateDimensions = () => {
+      const parent = canvas.parentElement;
+      if (parent) {
+        setDimensions({ width: parent.clientWidth, height: parent.clientHeight });
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+
+  useEffect(() => {
+    if (!dimensions.width || !dimensions.height) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dots = generateDots(dimensions.width, dimensions.height);
+    let animationFrameId;
+    let startTime = Date.now();
+
+    function animate() {
+      ctx.clearRect(0, 0, dimensions.width, dimensions.height);
+      dots.forEach(dot => {
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(37, 99, 235, ${dot.opacity})`;
+        ctx.fill();
+      });
+
+      const currentTime = (Date.now() - startTime) / 1000;
+      routes.forEach(route => {
+        const elapsed = currentTime - route.start.delay;
+        if (elapsed <= 0) return;
+        const duration = 3;
+        const progress = Math.min(elapsed / duration, 1);
+        const x = route.start.x + (route.end.x - route.start.x) * progress;
+        const y = route.start.y + (route.end.y - route.start.y) * progress;
+        
+        ctx.beginPath();
+        ctx.moveTo(route.start.x, route.start.y);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = route.color;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = "#3b82f6";
+        ctx.fill();
+      });
+
+      if (currentTime > 15) startTime = Date.now();
+      animationFrameId = requestAnimationFrame(animate);
+    }
+    animate();
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [dimensions]);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-40" />;
+};
 
 export default function SignIn() {
   const navigate = useNavigate()
@@ -16,9 +164,9 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [step, setStep] = useState(location.state?.role ? 1 : 0) // Step 0 = role selection, Step 1 = auth form
+  const [step, setStep] = useState(location.state?.role ? 1 : 0)
+  const [isHovered, setIsHovered] = useState(false);
 
-  // If already logged in, redirect
   useEffect(() => {
     const stored = localStorage.getItem('tl_user')
     if (stored) {
@@ -32,7 +180,7 @@ export default function SignIn() {
   function clearMessages() { setError(''); setSuccess('') }
 
   async function handleAuth(e) {
-    e.preventDefault()
+    if (e) e.preventDefault()
     clearMessages()
 
     if (!email || !email.includes('@')) { setError('Enter a valid email address.'); return }
@@ -68,194 +216,267 @@ export default function SignIn() {
     }
   }
 
-  const isRecruiter = selectedRole === 'recruiter'
-  const accentGrad = '#2563eb'
-  const accentColor = '#2563eb'
-  const accentBorder = 'rgba(37, 99, 235, 0.1)'
-  const glowColor = 'rgba(37, 99, 235, 0.05)'
-
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background blobs (subtle for light mode) */}
-      <div className="fixed top-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-30 pointer-events-none"
-        style={{ background: `radial-gradient(circle, #dbeafe 0%, transparent 70%)`, transition: 'all 0.5s' }} />
-      <div className="fixed bottom-[-15%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-30 pointer-events-none"
-        style={{ background: `radial-gradient(circle, #e0e7ff 0%, transparent 70%)`, transition: 'all 0.5s' }} />
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4 md:p-8">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-5xl h-full min-h-[640px] overflow-hidden rounded-[2rem] flex bg-white shadow-2xl border border-white/50"
+      >
+        {/* Left side - Map & Branding */}
+        <div className="hidden lg:block w-1/2 relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700">
+          <DotMap />
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-12 z-10 text-white text-center">
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center mb-8 shadow-2xl"
+            >
+              <div className="text-4xl text-white">🔍</div>
+            </motion.div>
+            
+            <motion.h2 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-4xl font-bold mb-4 tracking-tight"
+            >
+              TalentLens AI
+            </motion.h2>
+            
+            <motion.p 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="text-blue-100 text-lg font-medium max-w-xs leading-relaxed"
+            >
+              We don't match resumes — <br />
+              <span className="text-white font-bold italic">we match skills.</span>
+            </motion.p>
 
-      <div className="w-full max-w-md relative z-10">
-        {/* Logo */}
-        <div className="text-center mb-8 animate-fade-up">
-          <div className="inline-flex w-12 h-12 rounded-2xl items-center justify-center text-2xl mb-3 text-white shadow-sm"
-            style={{ background: accentGrad, transition: 'all 0.5s' }}>
-            🔍
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="absolute bottom-12 left-0 right-0"
+            >
+              <p className="text-blue-200/60 text-xs font-semibold uppercase tracking-[0.2em]">Next Gen Talent Intelligence</p>
+            </motion.div>
           </div>
-          <h1 className="text-xl font-bold text-slate-900">TalentLens AI</h1>
-          <p className="text-slate-500 text-xs mt-1">We don't match resumes — we match skills.</p>
+          
+          {/* Decorative gradients */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/20 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-400/20 blur-3xl rounded-full -translate-x-1/2 translate-y-1/2" />
         </div>
 
-        {/* Step 0 — Role Selection */}
-        {step === 0 && (
-          <div className="animate-fade-up">
-            <div className="saas-card p-8 shadow-sm">
-              <h2 className="text-slate-900 font-bold text-xl mb-1 text-center">Who are you?</h2>
-              <p className="text-slate-500 text-sm text-center mb-6">Pick your role for a tailored experience.</p>
-
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {[
-                  { role: 'candidate', icon: '👤', title: 'Candidate', desc: 'Submit resume, get AI fit score' },
-                  { role: 'recruiter', icon: '🏢', title: 'Recruiter', desc: 'Manage jobs, rank candidates' },
-                ].map(r => (
-                  <button key={r.role}
-                    onClick={() => setSelectedRole(r.role)}
-                    className="relative p-4 rounded-xl text-left transition-all border"
-                    style={{
-                      background: selectedRole === r.role ? '#eff6ff' : '#ffffff',
-                      borderColor: selectedRole === r.role ? '#2563eb' : '#e2e8f0',
-                    }}>
-                    {selectedRole === r.role && (
-                      <span className="absolute top-2 right-2 text-xs font-bold text-blue-600">✓</span>
-                    )}
-                    <div className="text-2xl mb-2">{r.icon}</div>
-                    <div className="text-slate-900 font-semibold text-sm">{r.title}</div>
-                    <div className="text-slate-600 text-xs mt-0.5">{r.desc}</div>
-                  </button>
-                ))}
-              </div>
-
-              <button
-                onClick={() => setStep(1)}
-                className="w-full py-3 rounded-xl text-white font-bold text-sm transition-all hover:opacity-90 hover:scale-[1.01] shadow-md shadow-blue-500/20"
-                style={{ background: accentGrad, transition: 'all 0.4s' }}>
-                Continue as {selectedRole === 'recruiter' ? 'Recruiter' : 'Candidate'} →
-              </button>
-            </div>
-
-            <p className="text-center text-slate-600 text-xs mt-4">
-              Already have an account?{' '}
-              <button className="underline hover:text-slate-400 transition-colors" onClick={() => setStep(1)}>
-                Sign in
-              </button>
-            </p>
-          </div>
-        )}
-
-        {/* Step 1 — Auth Form */}
-        {step === 1 && (
-          <div className="animate-fade-up">
-            <button
-              onClick={() => { setStep(0); clearMessages() }}
-              className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 text-sm mb-5 transition-colors">
-              ← Back
-            </button>
-
-            <div className="saas-card overflow-hidden shadow-sm border border-slate-200">
-              {/* Role indicator top bar */}
-              <div className="h-1 w-full" style={{ background: accentGrad, transition: 'all 0.4s' }} />
-
-              <div className="p-8">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-blue-50">
-                    {isRecruiter ? '🏢' : '👤'}
-                  </div>
-                  <div>
-                    <h2 className="text-slate-900 font-bold text-base leading-tight">
-                      {isRecruiter ? 'Welcome, Recruiter' : 'Welcome, Candidate'}
-                    </h2>
-                    <p className="text-slate-500 text-xs">
-                      {authMode === 'signup' ? 'Create your account' : 'Sign in to continue'}
-                    </p>
-                  </div>
+        {/* Right side - Form */}
+        <div className="w-full lg:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative bg-white">
+          <AnimatePresence mode="wait">
+            {step === 0 ? (
+              <motion.div
+                key="step-0"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="w-full"
+              >
+                <div className="mb-10 text-center lg:text-left">
+                  <h1 className="text-3xl font-bold text-slate-900 mb-2">Who are you?</h1>
+                  <p className="text-slate-500 text-sm">Pick your role for a tailored experience.</p>
                 </div>
 
-                {/* Mode toggle */}
-                <div className="flex rounded-lg p-1 mb-5 bg-slate-100 border border-slate-200">
-                  {['signin', 'signup'].map(m => (
-                    <button key={m}
-                      onClick={() => { setAuthMode(m); clearMessages() }}
-                      className="flex-1 py-1.5 rounded-md text-sm font-semibold transition-all"
-                      style={{
-                        background: authMode === m ? accentGrad : 'transparent',
-                        color: authMode === m ? '#fff' : '#64748b',
-                        boxShadow: authMode === m ? `0 2px 4px rgba(0,0,0,0.1)` : 'none',
-                        transition: 'all 0.3s',
-                      }}>
-                      {m === 'signin' ? 'Sign In' : 'Sign Up'}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                  {[
+                    { role: 'candidate', icon: <User className="w-6 h-6" />, title: 'Candidate', desc: 'Find your perfect role' },
+                    { role: 'recruiter', icon: <Building2 className="w-6 h-6" />, title: 'Recruiter', desc: 'Find top talent' },
+                  ].map(r => (
+                    <button key={r.role}
+                      onClick={() => setSelectedRole(r.role)}
+                      className={cn(
+                        "group relative p-6 rounded-2xl text-left transition-all border-2",
+                        selectedRole === r.role 
+                          ? "bg-blue-50 border-blue-500 shadow-lg shadow-blue-500/10" 
+                          : "bg-white border-slate-100 hover:border-slate-200"
+                      )}>
+                      {selectedRole === r.role && (
+                        <div className="absolute top-4 right-4 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                          <Check className="w-3 h-3 text-white stroke-[4px]" />
+                        </div>
+                      )}
+                      <div className={cn(
+                        "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors",
+                        selectedRole === r.role ? "bg-blue-500 text-white" : "bg-slate-100 text-slate-600 group-hover:bg-slate-200"
+                      )}>
+                        {r.icon}
+                      </div>
+                      <div className="text-slate-900 font-bold text-base mb-1">{r.title}</div>
+                      <div className="text-slate-500 text-xs font-medium leading-relaxed">{r.desc}</div>
                     </button>
                   ))}
                 </div>
 
+                <Button
+                  onClick={() => setStep(1)}
+                  className="w-full h-14 text-base"
+                >
+                  Continue as {selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+
+                <div className="mt-8 text-center sm:text-left">
+                  <p className="text-slate-500 text-sm font-medium">
+                    Already have an account?{' '}
+                    <button onClick={() => setStep(1)} className="text-blue-600 font-bold hover:underline">
+                      Sign In
+                    </button>
+                  </p>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="step-1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="w-full"
+              >
+                <div className="mb-8 relative">
+                   <button
+                    onClick={() => { setStep(0); clearMessages() }}
+                    className="flex items-center gap-1.5 text-slate-500 hover:text-blue-600 text-sm font-bold transition-colors mb-6"
+                  >
+                    <ArrowRight className="w-4 h-4 rotate-180" />
+                    Change Role
+                  </button>
+                  <h1 className="text-3xl font-black text-slate-900 mb-1">
+                    {authMode === 'signin' ? 'Welcome Back' : 'Join TalentLens'}
+                  </h1>
+                  <p className="text-slate-500 text-sm font-medium">
+                    {selectedRole === 'recruiter' ? 'Recruiter' : 'Candidate'} Account
+                  </p>
+                </div>
+
+                {/* Mode Toggle */}
+                <div className="flex p-1 bg-slate-100 rounded-xl mb-8 border border-slate-200/50">
+                  <button onClick={() => { setAuthMode('signin'); clearMessages() }}
+                    className={cn(
+                      "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
+                      authMode === 'signin' ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                    )}>
+                    Sign In
+                  </button>
+                  <button onClick={() => { setAuthMode('signup'); clearMessages() }}
+                    className={cn(
+                      "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
+                      authMode === 'signup' ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                    )}>
+                    Sign Up
+                  </button>
+                </div>
+
+                 {/* Social Login */}
+                {authMode === 'signin' && (
+                  <div className="mb-6">
+                    <button 
+                      className="w-full flex items-center justify-center gap-3 h-12 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-semibold text-slate-700 text-sm shadow-sm"
+                      onClick={() => console.log("Google login")}
+                    >
+                      <Chrome className="w-5 h-5 text-blue-500" />
+                      Continue with Google
+                    </button>
+                    <div className="relative my-8">
+                      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
+                      <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold"><span className="px-3 bg-white text-slate-400">or use email</span></div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Messages */}
                 {error && (
-                  <div className="mb-4 px-4 py-3 rounded-lg text-sm animate-fade-in"
-                    style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#fca5a5' }}>
-                    ⚠ {error}
-                  </div>
+                   <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                    className="mb-4 p-4 rounded-xl text-sm bg-red-50 border border-red-100 text-red-600 font-medium flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" /> {error}
+                  </motion.div>
                 )}
                 {success && (
-                  <div className="mb-4 px-4 py-3 rounded-lg text-sm animate-fade-in"
-                    style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', color: '#6ee7b7' }}>
-                    ✓ {success}
-                  </div>
+                   <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                    className="mb-4 p-4 rounded-xl text-sm bg-emerald-50 border border-emerald-100 text-emerald-600 font-medium flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" /> {success}
+                  </motion.div>
                 )}
 
-                <form onSubmit={handleAuth} className="space-y-4">
+                <form className="space-y-4" onSubmit={handleAuth}>
                   {authMode === 'signup' && (
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
-                      <input className="input-field" type="text" value={name} onChange={e => setName(e.target.value)}
-                        autoComplete="off" spellCheck="false" />
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 pl-1">Full Name</label>
+                      <Input placeholder="Raksh Jog" value={name} onChange={e => setName(e.target.value)} required />
                     </div>
                   )}
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Email</label>
-                    <input className="input-field" type="email" value={email} onChange={e => setEmail(e.target.value)}
-                      autoComplete="off" spellCheck="false" />
+                  
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 pl-1">Email Address</label>
+                    <Input type="email" placeholder="name@company.com" value={email} onChange={e => setEmail(e.target.value)} required />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 pl-1">Password</label>
                     <div className="relative">
-                      <input className="input-field pr-10" type={showPw ? 'text' : 'password'}
-                        value={password} onChange={e => setPassword(e.target.value)}
-                        autoComplete="off" spellCheck="false" />
-                      <button type="button" onClick={() => setShowPw(v => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors text-sm">
-                        {showPw ? '🙈' : '👁'}
+                      <Input type={showPw ? "text" : "password"} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
+                      <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
                   </div>
 
                   {authMode === 'signup' && (
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Confirm Password</label>
-                      <input className="input-field" type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
-                        autoComplete="off" spellCheck="false" />
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 pl-1">Confirm Password</label>
+                      <Input type="password" placeholder="••••••••" value={confirm} onChange={e => setConfirm(e.target.value)} required />
                     </div>
                   )}
 
-                  <button type="submit" disabled={loading}
-                    className="w-full py-3.5 rounded-xl text-white font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 shadow-md shadow-blue-500/20"
-                    style={{ background: '#2563eb', marginTop: '1.5rem', transition: 'all 0.3s' }}>
-                    {loading ? (
-                      <>
-                        <span className="w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin-slow" />
-                        {authMode === 'signup' ? 'Creating account…' : 'Signing in…'}
-                      </>
-                    ) : (
-                      authMode === 'signup' ? 'Create Account' : 'Sign In'
-                    )}
-                  </button>
+                  <motion.div 
+                    onMouseEnter={() => setIsHovered(true)} 
+                    onMouseLeave={() => setIsHovered(false)}
+                    className="pt-4"
+                  >
+                    <Button disabled={loading} type="submit" className="w-full h-14 text-base relative overflow-hidden group">
+                      <span className="flex items-center justify-center relative z-10 font-bold tracking-tight">
+                        {loading ? (
+                          <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <>
+                            {authMode === 'signin' ? 'Sign In' : 'Create Account'}
+                            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
+                      </span>
+                       {isHovered && !loading && (
+                        <motion.div
+                          layoutId="shimmer"
+                          initial={{ x: '-100%' }}
+                          animate={{ x: '100%' }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+                        />
+                      )}
+                    </Button>
+                  </motion.div>
                 </form>
-              </div>
-            </div>
 
-            <p className="text-center text-slate-600 text-xs mt-4">
-              Demo mode — any credentials work.
-            </p>
-          </div>
-        )}
-      </div>
+                <div className="mt-8 text-center">
+                  <button className="text-slate-400 hover:text-blue-600 text-xs font-bold transition-colors">
+                    Forgot your password?
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+      <div className="fixed bottom-4 text-slate-400 text-[10px] font-bold uppercase tracking-[0.3em]">TalentLens AI © 2026</div>
     </div>
   )
 }

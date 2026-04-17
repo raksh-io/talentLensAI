@@ -53,12 +53,18 @@ def load_job(job_id: str) -> dict:
 
 
 def list_jobs() -> list[dict]:
-    """Return all available job profiles (id + title)."""
-    return [
-        {"id": json.loads(f.read_text())["id"],
-         "title": json.loads(f.read_text())["title"]}
-        for f in JOBS_DIR.glob("*.json")
-    ]
+    """Return all available job profiles (id + title), robustly handling malformed files."""
+    jobs = []
+    for f in JOBS_DIR.glob("*.json"):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+            jobs.append({
+                "id": data.get("id", f.stem),
+                "title": data.get("title", f.stem)
+            })
+        except Exception as e:
+            logger.warning(f"Skipping malformed job file {f.name}: {e}")
+    return jobs
 
 
 # ---------------------------------------------------------------------------
