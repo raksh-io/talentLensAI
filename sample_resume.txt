@@ -1,0 +1,36 @@
+Jane Doe
+jane.doe@email.com | github.com/janedoe | linkedin.com/in/janedoe
+
+SUMMARY
+Software engineer with 3 years of experience building backend services and REST APIs.
+Passionate about clean code, open source, and continuous learning.
+
+SKILLS
+Programming: Python, JavaScript, TypeScript, SQL
+Frameworks: FastAPI, Express.js, Node.js
+Tools: Git, Docker, Linux, VS Code
+Databases: PostgreSQL, MongoDB, Redis
+Cloud: Basic AWS (EC2, S3)
+
+EXPERIENCE
+Backend Engineer — TechCorp Inc (2022–Present)
+- Built and maintained REST APIs serving 50K+ daily users using Python and FastAPI
+- Designed PostgreSQL schemas and optimized slow queries (40% performance gain)
+- Containerized services with Docker; set up basic CI/CD using GitHub Actions
+- Collaborated in Agile team of 8 engineers
+
+Junior Developer — StartupXYZ (2021–2022)
+- Developed Node.js microservices for an e-commerce platform
+- Wrote unit tests with Jest, maintaining 85% code coverage
+- Contributed to React frontend components
+
+EDUCATION
+B.Tech Computer Science — State University (2021)
+GPA: 8.4/10
+
+PROJECTS
+- OpenTracker: Open-source habit tracking API (Python + FastAPI + PostgreSQL) — 120 GitHub stars
+- QuickQuery: SQL query builder library for Python — used by 40+ projects
+
+CERTIFICATIONS
+- AWS Certified Cloud Practitioner (2023)

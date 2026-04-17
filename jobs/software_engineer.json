@@ -1,0 +1,9 @@
+{
+  "id": "software_engineer",
+  "title": "Software Engineer",
+  "description": "Build scalable backend services and web applications.",
+  "required_skills": ["Python", "REST APIs", "SQL", "Git", "Data Structures"],
+  "nice_to_have_skills": ["Docker", "Kubernetes", "AWS", "TypeScript", "Redis"],
+  "min_experience_years": 1,
+  "domains": ["Backend", "Web Development"]
+}

@@ -1,0 +1,9 @@
+{
+  "id": "devops_engineer",
+  "title": "DevOps Engineer",
+  "description": "Manage CI/CD pipelines and cloud infrastructure.",
+  "required_skills": ["Docker", "Linux", "CI/CD", "Git", "Bash"],
+  "nice_to_have_skills": ["Kubernetes", "Terraform", "AWS", "Ansible", "Prometheus"],
+  "min_experience_years": 1,
+  "domains": ["DevOps", "Cloud", "Infrastructure"]
+}

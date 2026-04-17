@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Environment variables (KEEP SAFE — never commit keys)
+.env
+
+# spaCy model cache
+*.whl
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Uploaded resume files (if any temp storage)
+uploads/
+tmp/
+
+# Test artifacts
+.pytest_cache/
+htmlcov/
+.coverage
