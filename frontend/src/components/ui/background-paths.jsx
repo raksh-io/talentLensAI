@@ -13,7 +13,7 @@ function FloatingPaths({ position }) {
         } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
             684 - i * 5 * position
         } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
-        color: `rgba(15,23,42,${0.1 + i * 0.03})`,
+        color: `rgba(37, 99, 235, ${0.05 + i * 0.01})`,
         width: 0.5 + i * 0.03,
     }));
 
@@ -88,7 +88,7 @@ export function BackgroundPaths({ title = "Background Paths", tagline, onStarted
                                                 damping: 25,
                                             }}
                                             className="inline-block text-transparent bg-clip-text 
-                                            bg-gradient-to-r from-blue-700 to-teal-500"
+                                            bg-gradient-to-r from-blue-600 via-blue-800 to-indigo-900"
                                         >
                                             {letter}
                                         </motion.span>
@@ -117,11 +117,11 @@ export function BackgroundPaths({ title = "Background Paths", tagline, onStarted
                         <Button
                             variant="ghost"
                             onClick={onStarted}
-                            className="rounded-[1.15rem] px-8 py-6 text-lg font-semibold backdrop-blur-md 
-                            bg-slate-200 hover:bg-slate-300 
-                            text-slate-700 transition-all duration-300 
-                            group-hover:-translate-y-0.5 border border-black/10
-                            hover:shadow-md"
+                            className="rounded-[1.15rem] px-8 py-6 text-lg font-black backdrop-blur-md 
+                            bg-blue-600 hover:bg-blue-700 
+                            text-white transition-all duration-300 
+                            group-hover:-translate-y-0.5 shadow-lg shadow-blue-500/20
+                            hover:shadow-xl group-hover:shadow-blue-500/30"
                         >
                             <span className="opacity-90 group-hover:opacity-100 transition-opacity">
                                 Get Started Free

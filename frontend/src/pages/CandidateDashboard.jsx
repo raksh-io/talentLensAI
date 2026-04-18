@@ -4,31 +4,45 @@ import { supabase } from '../lib/supabaseClient'
 import { ProfileCard } from '@/components/ui/profile-card'
 import { CpuArchitecture } from '@/components/ui/cpu-architecture'
 import { RevealCard, IdentityCardBody } from '@/components/ui/reveal-card'
-import { Brain, Star, AlertCircle, Wrench, Briefcase, GraduationCap, FolderSearch } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { 
+  Brain, 
+  Star, 
+  AlertCircle, 
+  Wrench, 
+  Briefcase, 
+  GraduationCap, 
+  FolderSearch, 
+  Sparkles,
+  Users,
+  Zap,
+  Target,
+  Cpu,
+  Globe
+} from 'lucide-react'
 
 /* ── Topnav ── */
 function Navbar({ user, onLogout }) {
   return (
-    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3.5 backdrop-blur-3xl"
-      style={{ background: 'rgba(17, 24, 39, 0.4)', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base text-white shadow-sm"
-          style={{ background: '#2563eb' }}>🔍</div>
-        <div className="flex flex-col sm:flex-row items-baseline sm:items-center gap-1 sm:gap-2">
-          <span className="font-bold text-slate-100 text-lg tracking-tight">TalentLens AI</span>
-          <span className="hidden sm:inline text-slate-500 text-base">·</span>
-          <span className="hidden sm:inline text-slate-400 text-sm italic">Focusing on Skills, not just Resumes.</span>
+    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-xl border-b border-slate-100 bg-white/70">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+          <Sparkles className="w-6 h-6" />
+        </div>
+        <div className="flex flex-col">
+          <span className="font-black text-slate-900 text-lg tracking-tight leading-none">TalentLens AI</span>
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Candidate Intelligence</span>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <div className="hidden sm:flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm"
-            style={{ background: '#eff6ff' }}>👤</div>
-          <span className="text-slate-300 text-sm font-medium">{user?.name || user?.email?.split('@')[0]}</span>
-          <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-slate-800 text-slate-300 border border-slate-700">Candidate</span>
+      <div className="flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100">
+          <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] font-black">
+            {user?.name?.[0] || user?.email?.[0]?.toUpperCase()}
+          </div>
+          <span className="text-slate-600 text-xs font-black uppercase tracking-widest">{user?.name || user?.email?.split('@')[0]}</span>
         </div>
         <button onClick={onLogout}
-          className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 transition-all bg-slate-900 shadow-sm">
+          className="px-5 py-2.5 rounded-xl text-xs font-black text-slate-500 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-all bg-white shadow-sm uppercase tracking-widest">
           Sign Out
         </button>
       </div>
@@ -48,14 +62,14 @@ function ScoreRing({ score, color }) {
   return (
     <div className="relative w-32 h-32">
       <svg viewBox="0 0 120 120" className="w-full h-full" style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx="60" cy="60" r={r} fill="none" stroke="#e5e7eb" strokeWidth="8" />
+        <circle cx="60" cy="60" r={r} fill="none" stroke="#f1f5f9" strokeWidth="8" />
         <circle cx="60" cy="60" r={r} fill="none" stroke={color} strokeWidth="8"
           strokeLinecap="round"
           style={{ strokeDasharray: circ, strokeDashoffset: offset, transition: 'stroke-dashoffset 1s ease 0.2s' }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl font-black text-white leading-none">{score}</span>
-        <span className="text-sm text-slate-400">/ 100</span>
+        <span className="text-4xl font-black text-slate-900 leading-none">{score}</span>
+        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Match</span>
       </div>
     </div>
   )
@@ -233,97 +247,123 @@ export default function CandidateDashboard() {
   const scoreBorder = score >= 70 ? 'rgba(74,222,128,0.25)' : score >= 40 ? 'rgba(251,191,36,0.25)' : 'rgba(248,113,113,0.25)'
 
   return (
-    <div className="relative min-h-screen">
-      {/* Texture Layer */}
-      <div className="noise-overlay" />
+    <div className="relative min-h-screen bg-slate-50">
+      {/* Background Decor */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-50 rounded-full blur-[120px] -z-10 opacity-60" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-50 rounded-full blur-[100px] -z-10 opacity-40" />
       
       <Navbar user={user} onLogout={logout} />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+      <main className="max-w-7xl mx-auto px-6 py-12">
         {/* Page header */}
-        <div className="mb-10 animate-fade-up">
-          <h1 className="text-4xl font-black text-white mb-2">Candidate Analysis</h1>
-          <p className="text-slate-400 text-lg">Upload your resume to get an AI-powered skill fit score.</p>
+        <div className="mb-12 animate-fade-up">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-3 text-blue-600 font-black text-[10px] uppercase tracking-[0.2em] mb-4"
+          >
+            <div className="w-6 h-px bg-blue-600" /> Professional Dashboard
+          </motion.div>
+          <h1 className="text-5xl font-black text-slate-900 tracking-tight mb-2">Self Alignment Analysis</h1>
+          <p className="text-slate-500 text-lg font-medium">Verify your skills against market requirements in seconds.</p>
         </div>
 
         {/* ── INPUT FORM ── */}
         {/* ── INPUT FORM ── */}
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="saas-card overflow-hidden animate-fade-up delay-100 input-focus-card">
-            <div className="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm shadow-sm">📑</div>
-                <h3 className="font-bold text-slate-800 text-sm">Resume Data</h3>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+          {/* Resume Upload Card */}
+          <div className="saas-card overflow-hidden animate-fade-up bg-white">
+            <div className="flex items-center gap-3 px-8 py-6 border-b border-slate-50">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                <Users className="w-5 h-5" />
               </div>
+              <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider">Candidate Data</h3>
             </div>
-            <div className="p-6">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Upload Candidate Resume</label>
+            <div className="p-8">
               <div 
-                className={`dropzone p-8 text-center ${dragOver ? 'drag-over' : ''}`}
+                className={`group relative border-2 border-dashed rounded-[1.5rem] p-10 text-center transition-all duration-300 hover:border-blue-400 hover:bg-blue-50/30 ${dragOver ? 'border-blue-500 bg-blue-50' : 'border-slate-100'}`}
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleFileDrop}
                 onClick={() => fileInputRef.current?.click()}
               >
                 <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.docx,.txt" onChange={(e) => setFile(e.target.files[0])} />
-                <div className="text-3xl mb-3">{file ? '📎' : '📄'}</div>
-                <p className="text-sm font-semibold text-slate-700">{file ? file.name : 'Drop resume here or click'}</p>
-                <p className="text-xs text-slate-400 mt-1">PDF, DOCX, or TXT</p>
+                <div className="w-16 h-16 rounded-2xl bg-slate-50 group-hover:bg-white flex items-center justify-center mx-auto mb-4 transition-colors shadow-sm">
+                  {file ? <Zap className="w-8 h-8 text-blue-600" /> : <Users className="w-8 h-8 text-slate-300" />}
+                </div>
+                <p className="text-sm font-black text-slate-800 mb-1">{file ? file.name : 'Upload Resume'}</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{file ? `${(file.size/1024).toFixed(1)} KB` : 'PDF, DOCX, or TXT'}</p>
               </div>
             </div>
           </div>
 
-          <div className="saas-card overflow-hidden animate-fade-up delay-200 input-focus-card">
-            <div className="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center text-sm shadow-sm">💼</div>
-                <h3 className="font-bold text-slate-800 text-sm">Job Matching</h3>
+          {/* Socials & Meta Card */}
+          <div className="saas-card overflow-hidden animate-fade-up delay-100 bg-white">
+            <div className="flex items-center gap-3 px-8 py-6 border-b border-slate-50">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shadow-sm">
+                <Globe className="w-5 h-5" />
               </div>
+              <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider">Presence</h3>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-8 space-y-6">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Target Job Role</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Social Repositories</label>
+                <div className="space-y-3">
+                   <div className="relative group">
+                    <input type="text" placeholder="GitHub Profile URL" className="input-field pl-11" value={github} onChange={e => setGithub(e.target.value)} />
+                    <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-blue-500 transition-colors" />
+                  </div>
+                  <div className="relative group">
+                    <input type="text" placeholder="Portfolio Website" className="input-field pl-11" value={portfolio} onChange={e => setPortfolio(e.target.value)} />
+                    <Zap className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-blue-500 transition-colors" />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Target Alignment</label>
                 <select className="input-field" value={jobId} onChange={e => setJobId(e.target.value)}>
-                  <option value="">Select a role...</option>
-                  {jobs.map(j => <option key={j.id} value={j.id}>{j.custom ? '✨ ' : ''}{j.title}</option>)}
+                   <option value="">Select Target Role</option>
+                   {jobs.map(j => <option key={j.id} value={j.id}>{j.custom ? '✨ ' : ''}{j.title}</option>)}
                 </select>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">GitHub URL</label>
-                <input type="text" className="input-field" value={github} onChange={e => setGithub(e.target.value)} autoComplete="off" spellCheck="false" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Portfolio URL</label>
-                <input type="text" className="input-field" value={portfolio} onChange={e => setPortfolio(e.target.value)} autoComplete="off" spellCheck="false" />
-              </div>
             </div>
           </div>
 
-          <div className="saas-card overflow-hidden animate-fade-up delay-300 input-focus-card">
-            <div className="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-sm shadow-sm">📂</div>
-                <h3 className="font-bold text-slate-800 text-sm">Project Details</h3>
+          {/* Experience Card */}
+          <div className="saas-card overflow-hidden animate-fade-up delay-200 bg-white">
+            <div className="flex items-center gap-3 px-8 py-6 border-b border-slate-50">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
+                <Cpu className="w-5 h-5" />
               </div>
+              <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider">Project Narrative</h3>
             </div>
-            <div className="p-6">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Projects (Natural Language)</label>
-              <textarea className="input-field min-h-[148px] font-mono text-sm leading-relaxed" 
+            <div className="p-8">
+              <textarea 
+                placeholder="Describe your flagship projects or paste relevant work samples here for deeper NLP extraction..." 
+                className="input-field min-h-[164px] font-medium text-sm leading-relaxed resize-none" 
                 value={projects} onChange={e => setProjects(e.target.value)} 
-                autoComplete="off" spellCheck="false" />
+              />
             </div>
           </div>
 
-          <div className="md:col-span-3 flex flex-col sm:flex-row gap-4 animate-fade-up delay-400">
-            <button type="submit" disabled={loading}
-              className="flex-1 px-8 py-4 rounded-xl text-white font-bold text-sm transition-all disabled:opacity-50 hover:bg-blue-700 flex items-center justify-center gap-2 shadow-md shadow-blue-500/10 btn-glint"
-              style={{ background: '#2563eb' }}>
-              {loading ? <><span className="w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin-slow" />Analyzing…</> : <>⚡ Analyze Candidate Fit</>}
-            </button>
-            <button type="button" onClick={handleClear} disabled={loading}
-              className="px-8 py-4 rounded-xl text-slate-700 hover:text-slate-900 font-bold text-sm transition-all disabled:opacity-60 hover:bg-slate-100 flex items-center justify-center gap-2 border border-slate-200 bg-white shadow-sm">
-              🗑️ Clear
-            </button>
+          {/* Action Footer */}
+          <div className="lg:col-span-3 flex justify-between items-center bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm animate-fade-up delay-300">
+             <div className="flex items-center gap-3 pl-4">
+                <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center">
+                   <Target className="w-3 h-3 text-blue-600" />
+                </div>
+                <span className="text-sm font-bold text-slate-400 italic">Ready for high-precision neural matching?</span>
+             </div>
+             <div className="flex gap-4">
+                <button type="button" onClick={handleClear} disabled={loading}
+                  className="px-8 py-3.5 rounded-2xl text-slate-400 hover:text-slate-900 font-black text-[10px] uppercase tracking-widest transition-all disabled:opacity-50">
+                  Reset
+                </button>
+                <button type="submit" disabled={loading}
+                  className="px-10 py-3.5 rounded-2xl bg-blue-600 text-white font-black text-[10px] uppercase tracking-widest transition-all disabled:opacity-50 hover:bg-blue-700 shadow-lg shadow-blue-500/20 btn-glint">
+                  {loading ? 'Analyzing Neural Paths...' : '⚡ Initiate Deep Scan'}
+                </button>
+             </div>
           </div>
         </form>
 
