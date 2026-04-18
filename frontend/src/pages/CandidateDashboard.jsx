@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import candidateBg from '@/assets/candidate_bg.png'
+import bgImage from '@/assets/dashboard_bg_light.png'
 import { supabase } from '../lib/supabaseClient'
 import { ProfileCard } from '@/components/ui/profile-card'
 import { CpuArchitecture } from '@/components/ui/cpu-architecture'
@@ -250,16 +250,15 @@ export default function CandidateDashboard() {
 
   return (
     <div className="relative min-h-screen bg-transparent">
-      {/* Premium Background Image */}
-      <div className="fixed inset-0 -z-30 pointer-events-none overflow-hidden bg-white">
+      {/* Background Image */}
+      <div className="fixed inset-0 -z-30 pointer-events-none overflow-hidden">
         <img 
-          src={candidateBg} 
-          className="w-full h-full object-cover opacity-80" 
-          alt="Background" 
+          src={bgImage} 
+          className="w-full h-full object-cover opacity-100" 
+          alt="Dashboard Background" 
         />
-        {/* Subtle overlays for better contrast */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/20 via-transparent to-white/40" />
-        <div className="absolute inset-0 backdrop-blur-[2px]" />
+        {/* Subtle overlay for better contrast */}
+        <div className="absolute inset-0 bg-white/10" />
       </div>
       
       <Navbar user={user} onLogout={logout} />
