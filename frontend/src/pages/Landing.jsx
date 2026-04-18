@@ -66,7 +66,7 @@ function FeatureCard({ icon: Icon, title, desc, delay }) {
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay }}
       whileHover={{ y: -8, scale: 1.01 }}
-      className="saas-card p-10 bg-white group cursor-none relative overflow-hidden"
+      className="saas-card p-10 bg-white group cursor-none relative overflow-hidden glass-premium"
     >
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-indigo-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" />
       <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-8 group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-sm border border-blue-100 group-hover:shadow-blue-500/20 group-hover:shadow-lg">
@@ -75,6 +75,16 @@ function FeatureCard({ icon: Icon, title, desc, delay }) {
       <h3 className="text-slate-900 font-black text-2xl mb-4 tracking-tight leading-none">{title}</h3>
       <p className="text-slate-500 text-base leading-relaxed font-medium">{desc}</p>
     </motion.div>
+  )
+}
+
+function BackgroundAurora() {
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      <div className="aurora-blob w-[600px] h-[600px] bg-blue-400/20 top-[-10%] left-[-10%]" />
+      <div className="aurora-blob w-[500px] h-[500px] bg-indigo-400/15 bottom-[-5%] right-[5%] delay-700" style={{ animationDuration: '30s' }} />
+      <div className="aurora-blob w-[400px] h-[400px] bg-teal-400/10 top-[20%] right-[10%] delay-300" style={{ animationDuration: '22s' }} />
+    </div>
   )
 }
 
@@ -110,6 +120,7 @@ export default function Landing() {
   return (
     <div className="relative min-h-screen bg-slate-50 cursor-none">
       <CursorFollower />
+      <BackgroundAurora />
 
       {/* Progress Bar */}
       <motion.div className="fixed top-0 left-0 right-0 h-1 bg-blue-600 z-[100] origin-left" style={{ scaleX }} />
@@ -158,8 +169,8 @@ export default function Landing() {
       {/* Hero with BackgroundPaths */}
       <section className="relative z-10 pt-20">
         <BackgroundPaths 
-          title="Talent Intelligence Redefined" 
-          tagline="We don't match resumes — we match true human potential with neural precision."
+          title="TalentLens AI" 
+          tagline="We don't match the resume we match the skills"
           onStarted={() => navigate('/signin')} 
         />
       </section>

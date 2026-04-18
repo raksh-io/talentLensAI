@@ -67,8 +67,10 @@ export function BackgroundPaths({ title = "Background Paths", tagline, onStarted
                     transition={{ duration: 2 }}
                     className="max-w-5xl mx-auto flex flex-col items-center"
                 >
-                    <div className="inline-block px-8 py-10 md:px-16 md:py-12 mb-10 bg-gradient-to-br from-white/70 to-blue-200/40 backdrop-blur-[12px] border border-[rgba(255,255,255,0.3)] shadow-[0_10px_30px_rgba(0,0,0,0.08)] rounded-[2.5rem]">
-                        <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-6 tracking-tighter">
+                    <div className="inline-block px-6 py-8 md:px-12 md:py-10 mb-10 glass-premium glint-effect rounded-[3rem] relative overflow-hidden group/hero shadow-2xl">
+                        <div className="glint-line" />
+                        
+                        <h1 className="text-5xl sm:text-7xl md:text-8xl font-black mb-6 tracking-tighter leading-tight">
                             {words.map((word, wordIndex) => (
                                 <span
                                     key={wordIndex}
@@ -88,7 +90,7 @@ export function BackgroundPaths({ title = "Background Paths", tagline, onStarted
                                                 damping: 25,
                                             }}
                                             className="inline-block text-transparent bg-clip-text 
-                                            bg-gradient-to-r from-blue-600 via-blue-800 to-indigo-900"
+                                            bg-gradient-to-r from-blue-600 via-blue-800 to-indigo-900 drop-shadow-sm"
                                         >
                                             {letter}
                                         </motion.span>
@@ -102,7 +104,7 @@ export function BackgroundPaths({ title = "Background Paths", tagline, onStarted
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.5, duration: 0.8 }}
-                                className="text-lg md:text-xl font-bold text-blue-600 max-w-2xl mx-auto"
+                                className="text-sm md:text-lg font-black text-blue-600/70 max-w-2xl mx-auto uppercase tracking-widest italic"
                             >
                                 {tagline}
                             </motion.p>
