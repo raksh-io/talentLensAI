@@ -20,7 +20,7 @@ pip install -r requirements.txt
 ### 2. Set up environment
 ```bash
 copy .env.example .env
-# Edit .env and add your GEMINI_API_KEY and GITHUB_TOKEN
+# Edit .env and add your GITHUB_TOKEN
 ```
 
 ### 3. Run the API
@@ -56,7 +56,7 @@ Resume (PDF/TXT)  +  GitHub Username  +  Job ID
 [1] Extract resume text       (pdfplumber)
 [2] Fetch GitHub data         (PyGithub)
 [3] Load job profile          (JSON)
-[4] Gemini AI analysis        (skill extraction + matching)
+[4] NLP analysis               (skill extraction + matching)
 [5] Compute match score       (weighted formula)
 [6] Build gap analysis        (missing skills + resources)
          ↓
@@ -107,5 +107,4 @@ Add your own by dropping a JSON file in `/jobs/` following the same schema.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `GEMINI_API_KEY` | ✅ Yes | Google AI Studio API key |
 | `GITHUB_TOKEN` | ⚠️ Recommended | Increases GitHub API rate limit from 60 to 5000 req/hr |
