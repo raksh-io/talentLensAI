@@ -17,6 +17,9 @@ env/
 
 # Environment variables (KEEP SAFE — never commit keys)
 .env
+.env.*
+**/.env
+**/.env.*
 
 # spaCy model cache
 *.whl

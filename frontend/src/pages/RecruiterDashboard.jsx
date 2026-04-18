@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabaseClient'
 
 /* ── Topnav ── */
 function Navbar({ user, onLogout }) {
@@ -323,7 +324,18 @@ function ChipInput({ label, placeholder, chips, onChange }) {
 /* ── Main Component ── */
 export default function RecruiterDashboard() {
   const navigate = useNavigate()
-  const user = (() => { try { return JSON.parse(localStorage.getItem('tl_user') || '{}') } catch { return {} } })()
+  const [user, setUser] = useState(null)
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setUser({
+          name: session.user.user_metadata?.full_name,
+          email: session.user.email,
+          role: session.user.user_metadata?.role
+        })
+      }
+    })
+  }, [])
 
   // Leaderboard state
   const [candidates, setCandidates] = useState([])
@@ -347,7 +359,11 @@ export default function RecruiterDashboard() {
   const [jobError, setJobError] = useState('')
   const [jobSuccess, setJobSuccess] = useState('')
 
-  function logout() { localStorage.removeItem('tl_user'); navigate('/signin', { replace: true }) }
+  async function logout() { 
+    await supabase.auth.signOut()
+    localStorage.removeItem('tl_user')
+    navigate('/signin', { replace: true }) 
+  }
 
   async function loadCandidates() {
     setLoadingBoard(true); setBoardError('')

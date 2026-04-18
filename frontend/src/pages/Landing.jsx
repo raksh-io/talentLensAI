@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { supabase } from '../lib/supabaseClient'
 import { BackgroundPaths } from '@/components/ui/background-paths'
 import { motion } from 'framer-motion'
 
@@ -7,10 +8,22 @@ import { motion } from 'framer-motion'
 
 export default function Landing() {
   const navigate = useNavigate()
-  const stored = localStorage.getItem('tl_user')
-  let loggedIn = false
-  let existingUser = null
-  try { existingUser = stored ? JSON.parse(stored) : null; loggedIn = !!existingUser } catch {}
+  const [user, setUser] = useState(null)
+  
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setUser({
+          name: session.user.user_metadata?.full_name,
+          email: session.user.email,
+          role: session.user.user_metadata?.role
+        })
+      }
+    })
+  }, [])
+
+  const loggedIn = !!user
+  const existingUser = user
 
   const features = [
     { icon: '🧠', title: 'Skill Intelligence', desc: 'Deep NLP-powered extraction from resumes, GitHub, and portfolios.' },

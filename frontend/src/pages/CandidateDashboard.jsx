@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabaseClient'
 import { ProfileCard } from '@/components/ui/profile-card'
 import { CpuArchitecture } from '@/components/ui/cpu-architecture'
 import { RevealCard, IdentityCardBody } from '@/components/ui/reveal-card'
@@ -76,7 +77,18 @@ const STEPS = [
 
 export default function CandidateDashboard() {
   const navigate = useNavigate()
-  const user = (() => { try { return JSON.parse(localStorage.getItem('tl_user') || '{}') } catch { return {} } })()
+  const [user, setUser] = useState(null)
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setUser({
+          name: session.user.user_metadata?.full_name,
+          email: session.user.email,
+          role: session.user.user_metadata?.role
+        })
+      }
+    })
+  }, [])
 
   // Form state
   const [file, setFile] = useState(null)
@@ -97,7 +109,11 @@ export default function CandidateDashboard() {
   const fileInputRef = useRef(null)
   const stepTimer = useRef(null)
 
-  function logout() { localStorage.removeItem('tl_user'); navigate('/signin', { replace: true }) }
+  async function logout() { 
+    await supabase.auth.signOut()
+    localStorage.removeItem('tl_user')
+    navigate('/signin', { replace: true }) 
+  }
 
   // Load jobs on mount
   useEffect(() => {

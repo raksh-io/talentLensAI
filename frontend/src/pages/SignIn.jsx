@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { Eye, EyeOff, ArrowRight, User, Building2, Check, Chrome } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from '../lib/supabaseClient'
 
 // Helper function to merge class names
 const cn = (...classes) => {
@@ -168,13 +169,12 @@ export default function SignIn() {
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('tl_user')
-    if (stored) {
-      try {
-        const u = JSON.parse(stored)
-        navigate(u.role === 'recruiter' ? '/recruiter' : '/candidate', { replace: true })
-      } catch {}
-    }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        const role = session.user.user_metadata?.role
+        navigate(role === 'recruiter' ? '/recruiter' : '/candidate', { replace: true })
+      }
+    })
   }, [])
 
   function clearMessages() { setError(''); setSuccess('') }
@@ -191,26 +191,42 @@ export default function SignIn() {
     }
 
     setLoading(true)
-    await new Promise(r => setTimeout(r, 850))
 
     try {
-      let user
       if (authMode === 'signup') {
-        user = { name: name.trim(), email: email.trim(), role: selectedRole }
-        localStorage.setItem('tl_user', JSON.stringify(user))
-        setSuccess(`Account created! Welcome, ${name.split(' ')[0]} 🎉`)
-        await new Promise(r => setTimeout(r, 800))
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            data: {
+              full_name: name.trim(),
+              role: selectedRole
+            }
+          }
+        })
+        if (signUpError) throw signUpError
+        setSuccess('Account created! Please check your email for a verification link.')
       } else {
-        const stored = localStorage.getItem('tl_user')
-        const base = stored ? JSON.parse(stored) : { name: email.split('@')[0], email: email.trim() }
-        user = { ...base, role: selectedRole }
-        localStorage.setItem('tl_user', JSON.stringify(user))
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password
+        })
+        
+        if (signInError) {
+          if (signInError.message === 'Email not confirmed') {
+            setError('Please confirm your email first. Check your inbox (and spam folder) for the verification link, or disable email confirmation in the Supabase Dashboard.')
+            return
+          }
+          throw signInError
+        }
+        
+        const role = data.user.user_metadata?.role || selectedRole
         setSuccess('Welcome back! Redirecting…')
         await new Promise(r => setTimeout(r, 600))
+        navigate(role === 'recruiter' ? '/recruiter' : '/candidate', { replace: true })
       }
-      navigate(selectedRole === 'recruiter' ? '/recruiter' : '/candidate', { replace: true })
-    } catch {
-      setError('Something went wrong. Please try again.')
+    } catch (err) {
+      setError(err.message || 'Authentication failed. Please try again.')
     } finally {
       setLoading(false)
     }

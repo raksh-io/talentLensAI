@@ -16,8 +16,10 @@ Endpoints:
 """
 from __future__ import annotations
 
+import os
 import json
 import uuid
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -26,24 +28,64 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-
+from dotenv import load_dotenv
+from postgrest import SyncPostgrestClient
 
 from talent_pipeline import run_pipeline, list_jobs
 from resume_analyzer import analyze as analyze_resume_offline
 
 # ---------------------------------------------------------------------------
-# In-memory recruiter store (per server session)
+# Load Environment & Initialize Supabase
 # ---------------------------------------------------------------------------
-_candidate_store: list[dict] = []   # holds all analyzed candidate reports
+load_dotenv()
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("WARNING: SUPABASE_URL or SUPABASE_KEY not set. Persistence will fail.")
+
+# Initialize Postgrest client
+if SUPABASE_KEY == "YOUR_SUPABASE_SERVICE_ROLE_KEY_HERE":
+    print("CRITICAL: SUPABASE_KEY is still the placeholder. Database operations WILL fail.")
+    supabase_db = None
+else:
+    supabase_db = SyncPostgrestClient(f"{SUPABASE_URL}/rest/v1", headers={
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}"
+    })
+
+from contextlib import asynccontextmanager
+
+# ---------------------------------------------------------------------------
+# Background Model Pre-warming (Lifespan)
+# ---------------------------------------------------------------------------
+import threading
+
+def prewarm_models():
+    """Load heavy models in a separate thread so startup is fast but first-call is ready."""
+    try:
+        from resume_analyzer import _get_spacy_model
+        from pipeline.matcher.skill_matcher import SkillMatcher
+        _get_spacy_model()
+        matcher = SkillMatcher()
+        matcher._get_model()
+    except Exception:
+        pass
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Start pre-warming in background
+    threading.Thread(target=prewarm_models, daemon=True).start()
+    yield
+    # Shutdown logic (if any) can go here
+    pass
 
 app = FastAPI(
     title="TalentLens AI",
-    description=(
-        "AI-powered Talent Intelligence System — fully offline.\n\n"
-        "Analyzes resume + projects to produce: skill profile, fit score (0–100), "
-        "skill gap analysis. No external API keys required."
-    ),
-    version="2.0.0",
+    description="AI-powered Talent Intelligence System — fully offline core with Supabase persistence.",
+    version="2.1.0",
+    lifespan=lifespan
 )
 
 app.add_middleware(
@@ -53,30 +95,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------------------------------------------------------------------
-# Background Model Pre-warming
-# ---------------------------------------------------------------------------
-import threading
-
-def prewarm_models():
-    """Load heavy models in a separate thread so startup is fast but first-call is ready."""
-    try:
-        from resume_analyzer import _get_spacy_model
-        from pipeline.matcher.skill_matcher import SkillMatcher
-        
-        # 1. Load spaCy
-        _get_spacy_model()
-        
-        # 2. Load Sentence Transformer
-        matcher = SkillMatcher()
-        matcher._get_model()
-    except Exception as e:
-        pass
-
-@app.on_event("startup")
-def startup_event():
-    # Start pre-warming in background
-    threading.Thread(target=prewarm_models, daemon=True).start()
 
 
 # ---------------------------------------------------------------------------
@@ -87,59 +105,42 @@ frontend_pages_dir = Path(__file__).parent.parent / "frontend" / "pages"
 
 @app.get("/", tags=["UI"], include_in_schema=False)
 def serve_index():
-    # Redirect root to login page
     return FileResponse(str(frontend_pages_dir / "login.html"))
 
 @app.get("/login", tags=["UI"], include_in_schema=False)
 def serve_login():
-    """Serve the login / sign-up page."""
     return FileResponse(str(frontend_pages_dir / "login.html"))
 
 @app.get("/candidate", tags=["UI"], include_in_schema=False)
 def serve_candidate():
-    """Serve the candidate analysis page."""
     return FileResponse(str(frontend_pages_dir / "candidate.html"))
 
 @app.get("/recruiter", tags=["UI"], include_in_schema=False)
 def serve_recruiter():
-    """Serve the recruiter dashboard page."""
     return FileResponse(str(frontend_pages_dir / "recruiter.html"))
-
 
 
 @app.get("/health", tags=["Health"])
 def health():
     return {
         "status": "ok",
-        "service": "TalentLens AI",
-        "version": "2.0.0",
-        "mode": "fully offline — no API keys required",
+        "persistence": "supabase" if SUPABASE_URL else "none",
+        "mode": "hybrid offline-analysis / online-persistence"
     }
 
 
 @app.get("/jobs", tags=["Jobs"])
 def get_jobs():
-    """List all available job profiles to match against (built-in + custom)."""
+    """List all available job profiles (built-in + Supabase custom)."""
     base_jobs = list_jobs()
-    # Merge custom job profiles created via /recruiter/create-job
-    custom_dir = Path(__file__).parent / "jobs" / "custom"
+    
     custom_jobs = []
-    if custom_dir.exists():
-        for f in custom_dir.glob("*.json"):
-            try:
-                data = json.loads(f.read_text(encoding="utf-8"))
-                custom_jobs.append({
-                    "id": data["id"], 
-                    "title": data["title"], 
-                    "description": data.get("description", ""),
-                    "required_skills": data.get("required_skills", []),
-                    "nice_to_have_skills": data.get("nice_to_have_skills", []),
-                    "min_experience_years": data.get("min_experience_years", 0),
-                    "domains": data.get("domains", []),
-                    "custom": True
-                })
-            except Exception:
-                pass
+    try:
+        response = supabase_db.table("jobs").select("*").execute()
+        custom_jobs = response.data if response.data else []
+    except Exception as e:
+        print(f"Error fetching custom jobs from Supabase: {e}")
+        
     return {"jobs": base_jobs + custom_jobs}
 
 
@@ -263,12 +264,29 @@ Example:
             github_url=github_url.strip() if github_url else None,
             portfolio_url=portfolio_url.strip() if portfolio_url else None,
         )
-        # ── Auto-save to recruiter store ──
-        _candidate_store.append({
-            **report,
-            "_id":          str(uuid.uuid4()),
-            "_analyzed_at": datetime.utcnow().isoformat() + "Z",
-        })
+        
+        # ── Auto-save to Supabase ──
+        candidate_data = {
+            "candidate_name":   report.get("candidate_name", "Unknown"),
+            "job_id":           job_id.strip(),
+            "job_title":        report.get("job_title", ""),
+            "fit_score":        report.get("fit_score", 0),
+            "score_label":      report.get("score_label", "Neutral"),
+            "matched_skills":    report.get("matched_skills", []),
+            "missing_skills":    report.get("missing_skills", []),
+            "explanation":       report.get("explanation", ""),
+            "recommendation":    report.get("recommendation", "Consider"),
+            "analyzed_at":       datetime.utcnow().isoformat() + "Z",
+        }
+        
+        try:
+            if supabase_db:
+                supabase_db.table("candidates").insert(candidate_data).execute()
+            else:
+                print("Skipping auto-save: Supabase client not initialized.")
+        except Exception as e:
+            print(f"ERROR: Failed to auto-save candidate to Supabase. Table: candidates, Error: {e}")
+
         return report
 
     except ValueError as e:
@@ -286,26 +304,25 @@ def get_recruiter_candidates(
     job_id: Optional[str] = None,
     sort_by: str = "fit_score",
 ):
-    """
-    Return ranked candidate leaderboard.
-
-    - `job_id` (optional): filter to a specific role
-    - `sort_by`: 'fit_score' (default) | 'analyzed_at'
-    """
-    candidates = list(_candidate_store)
-    if job_id:
-        candidates = [c for c in candidates if c.get("job_id") == job_id]
-
-    # Sort
-    if sort_by == "analyzed_at":
-        candidates = sorted(candidates, key=lambda c: c.get("_analyzed_at", ""), reverse=True)
-    else:
-        candidates = sorted(candidates, key=lambda c: c.get("fit_score", 0), reverse=True)
-
-    return {
-        "total": len(candidates),
-        "candidates": candidates,
-    }
+    """Return ranked candidate leaderboard from Supabase."""
+    try:
+        query = supabase_db.table("candidates").select("*")
+        if job_id:
+            query = query.eq("job_id", job_id)
+        
+        # Sort
+        order_col = "fit_score" if sort_by == "fit_score" else "analyzed_at"
+        query = query.order(order_col, desc=True)
+        
+        response = query.execute()
+        candidates = response.data if response.data else []
+        
+        return {
+            "total": len(candidates),
+            "candidates": candidates,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
 
 @app.post("/recruiter/candidates", tags=["Recruiter"])
@@ -315,24 +332,29 @@ async def create_recruiter_candidate(
     fit_score: int = Form(default=0),
     recommendation: str = Form(default="Consider"),
     job_title: Optional[str] = Form(default=None),
+    score_label: Optional[str] = Form(default="Neutral"),
 ):
-    """Manually add a candidate to the board."""
+    """Manually add a candidate to the board via Supabase."""
     candidate = {
-        "_id":              str(uuid.uuid4()),
         "candidate_name":   name,
         "job_id":           job_id,
         "job_title":        job_title or job_id,
         "fit_score":        fit_score,
+        "score_label":      score_label,
         "recommendation":   recommendation,
-        "skills":           [],
-        "matched_skills":    [],
-        "missing_skills":    [],
-        "score_breakdown":  {"skill_match": 0, "project_relevance": 0},
-        "_analyzed_at":     datetime.utcnow().isoformat() + "Z",
-        "manual":           True
+        "matched_skills":   [],
+        "missing_skills":   [],
+        "analyzed_at":      datetime.utcnow().isoformat() + "Z",
     }
-    _candidate_store.append(candidate)
-    return {"message": "Candidate added.", "candidate": candidate}
+    
+    try:
+        if not supabase_db:
+             raise Exception("Supabase client not initialized. Check your .env file.")
+        response = supabase_db.table("candidates").insert(candidate).execute()
+        return {"message": "Candidate added.", "candidate": response.data[0] if response.data else candidate}
+    except Exception as e:
+        print(f"Database insertion error: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
 
 @app.put("/recruiter/candidates/{candidate_id}", tags=["Recruiter"])
@@ -343,34 +365,46 @@ async def update_recruiter_candidate(
     recommendation: str = Form(...),
     job_title: Optional[str] = Form(default=None),
 ):
-    """Update an existing candidate's details."""
-    for c in _candidate_store:
-        if c.get("_id") == candidate_id:
-            c["candidate_name"] = name
-            c["fit_score"] = fit_score
-            c["recommendation"] = recommendation
-            if job_title:
-                c["job_title"] = job_title
-            return {"message": "Candidate updated.", "candidate": c}
-    raise HTTPException(status_code=404, detail="Candidate not found.")
+    """Update an existing candidate's details in Supabase."""
+    update_data = {
+        "candidate_name": name,
+        "fit_score": fit_score,
+        "recommendation": recommendation
+    }
+    if job_title:
+        update_data["job_title"] = job_title
+
+    try:
+        response = supabase_db.table("candidates").update(update_data).eq("id", candidate_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Candidate not found.")
+        return {"message": "Candidate updated.", "candidate": response.data[0]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
 
 @app.delete("/recruiter/candidates", tags=["Recruiter"])
 def clear_recruiter_candidates():
-    """Clear the entire recruiter candidate board."""
-    _candidate_store.clear()
-    return {"message": "Candidate board cleared.", "total": 0}
+    """Clear the entire recruiter candidate board in Supabase."""
+    try:
+        # Note: In production, you might want to wrap this or use a restricted policy.
+        # This deletes all rows.
+        supabase_db.table("candidates").delete().neq("candidate_name", "___").execute()
+        return {"message": "Candidate board cleared."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
 
 @app.delete("/recruiter/candidates/{candidate_id}", tags=["Recruiter"])
 def delete_recruiter_candidate(candidate_id: str):
-    """Remove a single candidate from the board by ID."""
-    global _candidate_store
-    before = len(_candidate_store)
-    _candidate_store = [c for c in _candidate_store if c.get("_id") != candidate_id]
-    if len(_candidate_store) == before:
-        raise HTTPException(status_code=404, detail="Candidate not found.")
-    return {"message": "Candidate removed.", "total": len(_candidate_store)}
+    """Remove a single candidate from the board by ID in Supabase."""
+    try:
+        response = supabase_db.table("candidates").delete().eq("id", candidate_id).execute()
+        if not response.data:
+             raise HTTPException(status_code=404, detail="Candidate not found.")
+        return {"message": "Candidate removed."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
 
 @app.post("/recruiter/create-job", tags=["Recruiter"])
@@ -391,43 +425,29 @@ async def create_recruiter_job(
         description='Job domains as JSON array, e.g. ["Frontend", "Web"]',
     ),
 ):
-    """
-    Create a custom job posting that appears in /jobs and can be used in /analyze.
-
-    The job profile is saved under jobs/custom/<id>.json.
-    """
+    """Create a custom job posting in Supabase."""
     try:
         req_skills = json.loads(required_skills)
         nth_skills = json.loads(nice_to_have_skills)
         domains_list = json.loads(domains)
-        if not isinstance(req_skills, list):
-            raise ValueError("required_skills must be a JSON array")
     except (json.JSONDecodeError, ValueError) as e:
         raise HTTPException(status_code=400, detail=f"Invalid JSON field: {e}")
 
-    # Generate ID from title
-    job_id = re.sub(r"[^a-z0-9]+", "_", title.strip().lower()).strip("_")
-    job_id = f"custom_{job_id}"
-
     profile = {
-        "id":                   job_id,
         "title":                title.strip(),
         "description":          description.strip(),
         "required_skills":      req_skills,
         "nice_to_have_skills":  nth_skills,
-        "soft_skills":          [],
         "min_experience_years": min_experience_years,
         "domains":              domains_list,
+        "custom":               True
     }
 
-    custom_dir = Path(__file__).parent / "jobs" / "custom"
-    custom_dir.mkdir(parents=True, exist_ok=True)
-    (custom_dir / f"{job_id}.json").write_text(
-        json.dumps(profile, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
-
-    return {"message": "Job created.", "job_id": job_id, "job": profile}
+    try:
+        response = supabase_db.table("jobs").insert(profile).execute()
+        return {"message": "Job created.", "job": response.data[0] if response.data else profile}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
 
 @app.put("/recruiter/jobs/{job_id}", tags=["Recruiter"])
@@ -440,11 +460,7 @@ async def update_recruiter_job(
     min_experience_years: float = Form(default=0.0),
     domains: str = Form(default="[]"),
 ):
-    """Update an existing custom job profile."""
-    custom_file = Path(__file__).parent / "jobs" / "custom" / f"{job_id}.json"
-    if not custom_file.exists():
-        raise HTTPException(status_code=404, detail="Custom job not found.")
-
+    """Update an existing custom job profile in Supabase."""
     try:
         req_skills = json.loads(required_skills)
         nth_skills = json.loads(nice_to_have_skills)
@@ -453,7 +469,6 @@ async def update_recruiter_job(
         raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}")
 
     profile = {
-        "id":                   job_id,
         "title":                title.strip(),
         "description":          description.strip(),
         "required_skills":      req_skills,
@@ -462,19 +477,25 @@ async def update_recruiter_job(
         "domains":              domains_list,
     }
 
-    custom_file.write_text(json.dumps(profile, indent=2, ensure_ascii=False), encoding="utf-8")
-    return {"message": "Job updated.", "job": profile}
+    try:
+        response = supabase_db.table("jobs").update(profile).eq("id", job_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Job not found.")
+        return {"message": "Job updated.", "job": response.data[0]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
 
 @app.delete("/recruiter/jobs/{job_id}", tags=["Recruiter"])
 def delete_recruiter_job(job_id: str):
-    """Delete a custom job profile."""
-    custom_file = Path(__file__).parent / "jobs" / "custom" / f"{job_id}.json"
-    if not custom_file.exists():
-        raise HTTPException(status_code=404, detail="Custom job not found.")
-    
-    custom_file.unlink()
-    return {"message": "Job deleted.", "job_id": job_id}
+    """Delete a custom job profile from Supabase."""
+    try:
+        response = supabase_db.table("jobs").delete().eq("id", job_id).execute()
+        if not response.data:
+             raise HTTPException(status_code=404, detail="Job not found.")
+        return {"message": "Job deleted.", "job_id": job_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
 
 # ---------------------------------------------------------------------------
