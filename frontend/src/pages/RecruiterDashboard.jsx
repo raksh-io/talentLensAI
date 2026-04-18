@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import recruiterBg from '@/assets/candidate_bg.png'
 import { 
   Users, 
   Briefcase, 
@@ -148,7 +149,7 @@ function CandidateModal({ candidate: c, onClose, onUpdate }) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center px-4 py-8 overflow-y-auto bg-slate-900/40 backdrop-blur-sm"
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-2xl bg-white rounded-[2rem] shadow-2xl border border-slate-200 animate-fade-up relative my-auto overflow-hidden">
+      <div className="w-full max-w-2xl glass-premium rounded-[2rem] shadow-2xl animate-fade-up relative my-auto overflow-hidden">
         <div className="absolute top-6 right-6 flex gap-2 z-10">
           {!isEditing && (
             <button onClick={() => setIsEditing(true)}
@@ -254,7 +255,7 @@ function CandidateModal({ candidate: c, onClose, onUpdate }) {
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-4 mb-10">
-                <div className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
+                <div className="p-5 glass-premium rounded-2xl">
                   <div className="flex items-center gap-2 mb-3">
                     <Zap className="w-4 h-4 text-blue-500" />
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Matched Skills</span>
@@ -267,7 +268,7 @@ function CandidateModal({ candidate: c, onClose, onUpdate }) {
                     )) || <span className="text-slate-300 italic text-xs">None</span>}
                   </div>
                 </div>
-                <div className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
+                <div className="p-5 glass-premium rounded-2xl">
                   <div className="flex items-center gap-2 mb-3">
                     <FileText className="w-4 h-4 text-slate-400" />
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Growth Areas</span>
@@ -564,7 +565,17 @@ export default function RecruiterDashboard() {
   const avg = total ? Math.round(candidates.reduce((s, c) => s + (c.fit_score || 0), 0) / total) : null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div className="relative min-h-screen bg-transparent">
+      {/* Premium Background Image */}
+      <div className="fixed inset-0 -z-30 pointer-events-none overflow-hidden bg-white">
+        <img 
+          src={recruiterBg} 
+          className="w-full h-full object-cover opacity-80" 
+          alt="Background" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/20 via-transparent to-white/40" />
+        <div className="absolute inset-0 backdrop-blur-[2px]" />
+      </div>
       <Navbar user={user} onLogout={logout} />
 
       {selected && (
@@ -597,7 +608,7 @@ export default function RecruiterDashboard() {
               { val: strongHire, label: 'Top Fits', icon: <Trophy className="w-5 h-5" />, color: 'emerald' },
               { val: avg !== null ? `${avg}%` : '—', label: 'Avg. Fit', icon: <Zap className="w-5 h-5" />, color: 'blue' },
             ].map((s, i) => (
-              <div key={i} className="bg-white px-6 py-5 rounded-[2rem] border border-slate-200 shadow-xl shadow-blue-500/5 min-w-[140px] text-center">
+              <div key={i} className="glass-premium px-6 py-5 rounded-[2rem] min-w-[140px] text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <div className={`w-8 h-8 rounded-lg bg-${s.color}-50 text-${s.color}-600 flex items-center justify-center`}>
                     {s.icon}
@@ -611,7 +622,7 @@ export default function RecruiterDashboard() {
         </div>
 
         {/* ── Create Job Accordion ── */}
-        <div className="bg-white rounded-[2rem] shadow-xl shadow-blue-500/5 mb-12 animate-fade-up delay-100 border border-slate-200 overflow-hidden">
+        <div className="glass-premium rounded-[2rem] mb-12 animate-fade-up delay-100 overflow-hidden">
           <button type="button"
             className="w-full flex items-center justify-between px-8 py-7 text-left transition-colors hover:bg-slate-50"
             onClick={() => {
@@ -694,7 +705,7 @@ export default function RecruiterDashboard() {
         </div>
 
         {/* ── Job Management Section ── */}
-        <div className="bg-white rounded-[2rem] shadow-xl shadow-blue-500/5 mb-12 animate-fade-up delay-200 border border-slate-200 overflow-hidden">
+        <div className="glass-premium rounded-[2rem] mb-12 animate-fade-up delay-200 overflow-hidden">
           <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
             <h2 className="text-slate-900 font-black text-xl flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
@@ -753,9 +764,9 @@ export default function RecruiterDashboard() {
         </div>
 
         {/* ── Leaderboard ── */}
-        <div className="bg-white rounded-[2rem] shadow-xl shadow-blue-500/5 animate-fade-up delay-300 border border-slate-200 overflow-hidden">
+        <div className="glass-premium rounded-[2rem] animate-fade-up delay-300 overflow-hidden">
           {/* Table header bar */}
-          <div className="flex items-center justify-between flex-wrap gap-6 px-10 py-8 border-b border-slate-100 bg-white">
+          <div className="flex items-center justify-between flex-wrap gap-6 px-10 py-8 border-b border-slate-100 bg-white/40 backdrop-blur-md">
             <div>
               <h2 className="text-slate-900 font-black text-2xl tracking-tight leading-none mb-1">Ranked Prospects</h2>
               <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Global talent assessment pipeline</p>

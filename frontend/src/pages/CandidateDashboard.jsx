@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import candidateBg from '@/assets/candidate_bg.png'
 import { supabase } from '../lib/supabaseClient'
 import { ProfileCard } from '@/components/ui/profile-card'
 import { CpuArchitecture } from '@/components/ui/cpu-architecture'
 import { RevealCard, IdentityCardBody } from '@/components/ui/reveal-card'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Brain, 
   Star, 
@@ -18,7 +19,8 @@ import {
   Zap,
   Target,
   Cpu,
-  Globe
+  Globe,
+  CheckCircle2
 } from 'lucide-react'
 
 /* ── Topnav ── */
@@ -247,10 +249,18 @@ export default function CandidateDashboard() {
   const scoreBorder = score >= 70 ? 'rgba(74,222,128,0.25)' : score >= 40 ? 'rgba(251,191,36,0.25)' : 'rgba(248,113,113,0.25)'
 
   return (
-    <div className="relative min-h-screen bg-slate-50">
-      {/* Background Decor */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-50 rounded-full blur-[120px] -z-10 opacity-60" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-50 rounded-full blur-[100px] -z-10 opacity-40" />
+    <div className="relative min-h-screen bg-transparent">
+      {/* Premium Background Image */}
+      <div className="fixed inset-0 -z-30 pointer-events-none overflow-hidden bg-white">
+        <img 
+          src={candidateBg} 
+          className="w-full h-full object-cover opacity-80" 
+          alt="Background" 
+        />
+        {/* Subtle overlays for better contrast */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/20 via-transparent to-white/40" />
+        <div className="absolute inset-0 backdrop-blur-[2px]" />
+      </div>
       
       <Navbar user={user} onLogout={logout} />
 
@@ -260,24 +270,68 @@ export default function CandidateDashboard() {
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3 text-blue-600 font-black text-[10px] uppercase tracking-[0.2em] mb-4"
+            className="flex items-center gap-3 text-blue-600 font-black text-[10px] uppercase tracking-[0.4em] mb-4"
           >
-            <div className="w-6 h-px bg-blue-600" /> Professional Dashboard
+            <div className="w-8 h-[2px] bg-blue-600" /> Career Intelligence Suite
           </motion.div>
-          <h1 className="text-5xl font-black text-slate-900 tracking-tight mb-2">Self Alignment Analysis</h1>
-          <p className="text-slate-500 text-lg font-medium">Verify your skills against market requirements in seconds.</p>
+          <h1 className="text-6xl font-black text-slate-900 tracking-tighter mb-4 leading-none">
+            Career <span className="text-blue-600">Insights</span>
+          </h1>
+          <p className="text-slate-500 text-xl font-bold max-w-2xl leading-relaxed">
+            Know Your Skills. Prove Your Value.
+          </p>
         </div>
+        
+        {/* ── MARKET INSIGHT SUITE ── */}
+        <AnimatePresence>
+          {jobId && !results && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-12"
+            >
+              <div className="saas-card p-1 bg-gradient-to-r from-blue-100 via-indigo-50 to-teal-50">
+                <div className="bg-white/40 backdrop-blur-md rounded-[1.8rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-100 flex items-center gap-2">
+                         <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" /> Live Market Insight
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-black text-slate-900 mb-2">Target Role: <span className="text-blue-600">{jobs.find(j => j.id === jobId)?.title}</span></h3>
+                    <p className="text-slate-400 text-sm font-medium mb-6">Our neural engine has identified the core pillars for this trajectory. Match your skills against these requirements for a high-precision fit.</p>
+                    
+                    <div className="flex flex-wrap gap-2">
+                       {jobs.find(j => j.id === jobId)?.required_skills?.map((s, i) => (
+                         <span key={i} className="px-4 py-2 bg-slate-50 text-slate-600 rounded-xl text-xs font-bold border border-slate-100 flex items-center gap-2 shadow-sm">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" /> {s}
+                         </span>
+                       ))}
+                    </div>
+                  </div>
+                  
+                  <div className="w-full md:w-64 p-6 bg-slate-900 rounded-[2rem] flex flex-col items-center justify-center text-center shadow-xl">
+                     <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center mb-4 text-blue-400">
+                        <Zap className="w-8 h-8" />
+                     </div>
+                     <span className="text-white font-black text-2xl mb-1">95.2%</span>
+                     <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Confidence Index</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* ── INPUT FORM ── */}
-        {/* ── INPUT FORM ── */}
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           {/* Resume Upload Card */}
-          <div className="saas-card overflow-hidden animate-fade-up bg-white">
+          <div className="saas-card overflow-hidden animate-fade-up glass-premium">
             <div className="flex items-center gap-3 px-8 py-6 border-b border-slate-50">
               <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
-                <Users className="w-5 h-5" />
+                <Brain className="w-5 h-5" />
               </div>
-              <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider">Candidate Data</h3>
+              <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider">Professional DNA</h3>
             </div>
             <div className="p-8">
               <div 
@@ -298,12 +352,12 @@ export default function CandidateDashboard() {
           </div>
 
           {/* Socials & Meta Card */}
-          <div className="saas-card overflow-hidden animate-fade-up delay-100 bg-white">
+          <div className="saas-card overflow-hidden animate-fade-up delay-100 glass-premium">
             <div className="flex items-center gap-3 px-8 py-6 border-b border-slate-50">
               <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shadow-sm">
-                <Globe className="w-5 h-5" />
+                <Target className="w-5 h-5" />
               </div>
-              <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider">Presence</h3>
+              <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider">Neural Alignment</h3>
             </div>
             <div className="p-8 space-y-6">
               <div>
@@ -330,10 +384,10 @@ export default function CandidateDashboard() {
           </div>
 
           {/* Experience Card */}
-          <div className="saas-card overflow-hidden animate-fade-up delay-200 bg-white">
+          <div className="saas-card overflow-hidden animate-fade-up delay-200 glass-premium">
             <div className="flex items-center gap-3 px-8 py-6 border-b border-slate-50">
               <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
-                <Cpu className="w-5 h-5" />
+                <Sparkles className="w-5 h-5" />
               </div>
               <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider">Project Narrative</h3>
             </div>
@@ -347,7 +401,7 @@ export default function CandidateDashboard() {
           </div>
 
           {/* Action Footer */}
-          <div className="lg:col-span-3 flex justify-between items-center bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm animate-fade-up delay-300">
+          <div className="lg:col-span-3 flex justify-between items-center glass-premium p-6 rounded-[2rem] animate-fade-up delay-300">
              <div className="flex items-center gap-3 pl-4">
                 <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center">
                    <Target className="w-3 h-3 text-blue-600" />
@@ -411,25 +465,38 @@ export default function CandidateDashboard() {
                   accent="#3b82f6"
                   base={
                     <IdentityCardBody title="AI Analysis" subtitle="Neural Evaluation" icon={<Brain />}>
-                      <div className="mt-4 flex items-center gap-4">
-                        <div className="text-5xl font-black text-[#2dd4bf]">{results.fit_score}%</div>
-                        <div className="flex-grow h-3 bg-white/5 rounded-full overflow-hidden">
-                          <div className="h-full bg-[#2dd4bf] transition-all duration-1000" style={{ width: `${results.fit_score}%` }} />
-                        </div>
+                      <div className="mt-4 flex items-center justify-between">
+                         <div className="flex items-center gap-4">
+                            <div className="text-5xl font-black text-[#2dd4bf]">{results.fit_score}%</div>
+                            <div className="flex flex-col">
+                               <span className="text-[10px] font-black uppercase tracking-widest text-[#2dd4bf]">Alignment Score</span>
+                               <span className="text-xs font-bold text-slate-400 capitalize">{results.score_label}</span>
+                            </div>
+                         </div>
+                         <div className="px-5 py-2 rounded-xl bg-blue-50 border border-blue-100/50 flex flex-col items-center">
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-600 mb-1">Neural Verdict</span>
+                            <span className="text-sm font-black text-slate-900">{results.recommendation}</span>
+                         </div>
                       </div>
-                      <p className="mt-6 text-lg text-slate-400 leading-relaxed mb-6">{results.explanation.slice(0, 200)}...</p>
-                      <div className="mt-6 flex justify-center">
-                        <div className="relative w-40 h-24 overflow-hidden">
+                      
+                      <div className="mt-8 flex-grow h-3 bg-white/5 rounded-full overflow-hidden">
+                         <div className="h-full bg-[#2dd4bf] transition-all duration-1000" style={{ width: `${results.fit_score}%` }} />
+                      </div>
+
+                      <p className="mt-8 text-xl text-slate-400 leading-relaxed mb-6 font-medium italic">"{results.explanation}"</p>
+                      
+                      <div className="mt-10 flex justify-center">
+                        <div className="relative w-48 h-28 overflow-hidden">
                           <svg viewBox="0 0 100 50" className="w-full h-full">
-                            <path d="M 10 45 A 40 40 0 0 1 90 45" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="10" strokeLinecap="round" />
-                            <path d="M 10 45 A 40 40 0 0 1 90 45" fill="none" stroke="url(#speed-grad)" strokeWidth="10" strokeLinecap="round" strokeDasharray="125.6" strokeDashoffset={125.6 * (1 - results.fit_score / 100)} className="transition-all duration-1000 ease-out" />
+                            <path d="M 10 45 A 40 40 0 0 1 90 45" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" strokeLinecap="round" />
+                            <path d="M 10 45 A 40 40 0 0 1 90 45" fill="none" stroke="url(#speed-grad)" strokeWidth="12" strokeLinecap="round" strokeDasharray="125.6" strokeDashoffset={125.6 * (1 - results.fit_score / 100)} className="transition-all duration-1000 ease-out" />
                             <defs>
                               <linearGradient id="speed-grad" x1="0" y1="0" x2="1" y2="0">
                                 <stop offset="0%" stopColor="#2dd4bf" /><stop offset="100%" stopColor="#3b82f6" />
                               </linearGradient>
                             </defs>
-                            <line x1="50" y1="45" x2="50" y2="15" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" style={{ transformOrigin: '50px 45px', transform: `rotate(${(results.fit_score / 100) * 180 - 90}deg)`, transition: 'transform 1s cubic-bezier(0.34, 1.56, 0.64, 1)' }} />
-                            <circle cx="50" cy="45" r="4" fill="#94a3b8" />
+                            <line x1="50" y1="45" x2="50" y2="15" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" style={{ transformOrigin: '50px 45px', transform: `rotate(${(results.fit_score / 100) * 180 - 90}deg)`, transition: 'transform 1s cubic-bezier(0.34, 1.56, 0.64, 1)' }} />
+                            <circle cx="50" cy="45" r="5" fill="#94a3b8" />
                           </svg>
                         </div>
                       </div>
@@ -512,9 +579,9 @@ export default function CandidateDashboard() {
                   <IdentityCardBody title="💼 Experience" subtitle="Professional Path" icon={<Briefcase />}>
                     <div className="mt-4 space-y-3">
                       {results.experience?.filter(x => x.role).map((x, i) => (
-                        <div key={i} className="py-3 border-b border-white/5 last:border-0">
-                          <p className="text-lg font-bold text-white leading-tight">{x.role}</p>
-                          <p className="text-xs text-slate-400 mt-1">{x.organization} {x.duration ? `· ${x.duration}` : ''}</p>
+                        <div key={i} className="py-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors px-2 rounded-lg">
+                          <p className="text-xl font-bold text-white leading-tight mb-1">{x.role}</p>
+                          <p className="text-sm text-slate-400 font-medium">{x.organization} {x.duration ? `· ${x.duration}` : ''}</p>
                         </div>
                       ))}
                     </div>
@@ -541,9 +608,9 @@ export default function CandidateDashboard() {
                   <IdentityCardBody title="🎓 Education" subtitle="Academic Background" icon={<GraduationCap />}>
                     <div className="mt-4 space-y-3">
                       {results.education?.filter(x => x.degree || x.institution).map((x, i) => (
-                        <div key={i} className="py-2 border-b border-slate-50 last:border-0">
-                          <p className="text-xs font-bold text-white leading-tight">{x.degree}</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5">{x.institution} {x.year ? `· ${x.year}` : ''}</p>
+                        <div key={i} className="py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors px-2 rounded-lg">
+                          <p className="text-lg font-bold text-white leading-tight mb-1">{x.degree}</p>
+                          <p className="text-xs text-slate-400 font-medium">{x.institution} {x.year ? `· ${x.year}` : ''}</p>
                         </div>
                       ))}
                     </div>

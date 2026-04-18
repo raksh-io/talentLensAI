@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button";
 function FloatingPaths({ position }) {
     const paths = Array.from({ length: 36 }, (_, i) => ({
         id: i,
-        d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
-            380 - i * 5 * position
-        } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
-            152 - i * 5 * position
-        } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
-            684 - i * 5 * position
-        } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
+        d: position === "custom" 
+            ? `M${800 + i * 15} -200 C${800 + i * 15} -200 ${350 + i * 10} 200 ${350 + i * 10} 700`
+            : `M-${380 - i * 5 * position} -${189 + i * 6}C-${
+                380 - i * 5 * position
+            } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
+                152 - i * 5 * position
+            } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
+                684 - i * 5 * position
+            } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
         color: `rgba(37, 99, 235, ${0.05 + i * 0.01})`,
         width: 0.5 + i * 0.03,
     }));
@@ -20,7 +22,7 @@ function FloatingPaths({ position }) {
     return (
         <div className="absolute inset-0 pointer-events-none">
             <svg
-                className="w-full h-full text-slate-950"
+                className="w-full h-full text-white"
                 viewBox="0 0 696 316"
                 fill="none"
             >
@@ -58,6 +60,7 @@ export function BackgroundPaths({ title = "Background Paths", tagline, onStarted
             <div className="absolute inset-0">
                 <FloatingPaths position={1} />
                 <FloatingPaths position={-1} />
+                <FloatingPaths position="custom" />
             </div>
 
             <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">

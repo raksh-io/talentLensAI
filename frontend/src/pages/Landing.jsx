@@ -1,62 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import landingBg from '@/assets/landing_bg.png'
 import { supabase } from '../lib/supabaseClient'
 import { BackgroundPaths } from '@/components/ui/background-paths'
 import { motion, useScroll, useSpring, useTransform } from 'framer-motion'
-import { 
-  Users, 
-  Zap, 
-  Target, 
-  BarChart3, 
-  ChevronRight, 
-  ShieldCheck, 
-  Cpu, 
+import {
+  Users,
+  Zap,
+  Target,
+  BarChart3,
+  ChevronRight,
+  ShieldCheck,
+  Cpu,
   ArrowRight,
   Globe,
   Sparkles
 } from 'lucide-react'
 
-// Custom Cursor Follower
-function CursorFollower() {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-  const [isHovering, setIsHovering] = useState(false)
-
-  useEffect(() => {
-    const handleMove = (e) => setMousePos({ x: e.clientX, y: e.clientY })
-    const handleOver = (e) => {
-      if (['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.closest('button') || e.target.closest('a')) {
-        setIsHovering(true)
-      } else {
-        setIsHovering(false)
-      }
-    }
-    window.addEventListener('mousemove', handleMove)
-    window.addEventListener('mouseover', handleOver)
-    return () => {
-      window.removeEventListener('mousemove', handleMove)
-      window.removeEventListener('mouseover', handleOver)
-    }
-  }, [])
-
-  return (
-    <>
-      <div 
-        className="cursor-follower"
-        style={{ 
-          left: mousePos.x, 
-          top: mousePos.y,
-          width: isHovering ? '60px' : '40px',
-          height: isHovering ? '60px' : '40px',
-          background: isHovering ? 'rgba(37, 99, 235, 0.25)' : 'rgba(37, 99, 235, 0.15)'
-        }}
-      />
-      <div 
-        className="cursor-point"
-        style={{ left: mousePos.x, top: mousePos.y }}
-      />
-    </>
-  )
-}
 
 function FeatureCard({ icon: Icon, title, desc, delay }) {
   return (
@@ -66,7 +26,7 @@ function FeatureCard({ icon: Icon, title, desc, delay }) {
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay }}
       whileHover={{ y: -8, scale: 1.01 }}
-      className="saas-card p-10 bg-white group cursor-none relative overflow-hidden glass-premium"
+      className="saas-card p-10 bg-white group relative overflow-hidden glass-premium"
     >
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-indigo-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" />
       <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-8 group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-sm border border-blue-100 group-hover:shadow-blue-500/20 group-hover:shadow-lg">
@@ -93,7 +53,7 @@ export default function Landing() {
   const [user, setUser] = useState(null)
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 })
-  
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -118,18 +78,19 @@ export default function Landing() {
 
 
   return (
-    <div className="relative min-h-screen bg-slate-50 cursor-none">
-      <CursorFollower />
-      <BackgroundAurora />
+    <div className="relative min-h-screen bg-transparent">
+      {/* Premium Dark Geometric Background */}
+      <div className="fixed inset-0 -z-30 pointer-events-none overflow-hidden bg-slate-950">
+        <img
+          src={landingBg}
+          className="w-full h-full object-cover opacity-100"
+          alt="Geometric Background"
+        />
+        {/* Subtle dark overlay for better text contrast */}
+        <div className="absolute inset-0 bg-slate-900/40" />
+      </div>
 
-      {/* Progress Bar */}
       <motion.div className="fixed top-0 left-0 right-0 h-1 bg-blue-600 z-[100] origin-left" style={{ scaleX }} />
-
-      {/* Background blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] rounded-full opacity-30 pointer-events-none z-0"
-        style={{ background: 'radial-gradient(circle, #dbeafe 0%, transparent 70%)' }} />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-30 pointer-events-none z-0"
-        style={{ background: 'radial-gradient(circle, #e0f2fe 0%, transparent 70%)' }} />
 
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200">
@@ -140,7 +101,7 @@ export default function Landing() {
             </div>
             <span className="font-black text-slate-900 text-xl tracking-tight">TalentLens AI</span>
           </div>
-          
+
           <div className="flex items-center gap-6">
             {loggedIn ? (
               <div className="flex items-center gap-4">
@@ -168,39 +129,28 @@ export default function Landing() {
 
       {/* Hero with BackgroundPaths */}
       <section className="relative z-10 pt-20">
-        <BackgroundPaths 
-          title="TalentLens AI" 
+        <BackgroundPaths
+          title="TalentLens AI"
           tagline="We don't match the resume we match the skills"
-          onStarted={() => navigate('/signin')} 
+          onStarted={() => navigate('/signin')}
         />
       </section>
 
-      {/* Trusted By Marquee (Premium Addition) */}
-      <section className="relative z-10 py-10 overflow-hidden border-y border-slate-100 bg-white/30 backdrop-blur-md mt-[-20px]">
-        <div className="max-w-7xl mx-auto px-6 overflow-hidden">
-          <p className="text-center text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-8">Powering the next generation of hiring at</p>
-          <div className="flex gap-16 md:gap-24 items-center justify-center opacity-30 grayscale hover:opacity-60 hover:grayscale-0 transition-all duration-700">
-             {['TECHFLOW', 'NEURALIS', 'DATAVEX', 'QUANTUM', 'SYNERGY', 'APEX'].map(name => (
-               <span key={name} className="text-2xl font-black tracking-tighter text-slate-900">{name}</span>
-             ))}
-          </div>
-        </div>
-      </section>
 
       {/* Features Grid */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-24">
+      <section className="relative z-10 max-w-7xl mx-auto px-6 py-24 mt-[-60px]">
         <div className="flex flex-col items-center mb-16">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             className="px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-[0.2em] border border-blue-100 mb-6"
           >
             Why Choose Us
           </motion.div>
-          <h2 className="text-5xl font-black text-slate-900 text-center tracking-tight mb-4">Precision-First Hiring</h2>
-          <p className="text-slate-500 text-lg font-medium text-center max-w-2xl">Building the future of recruitment with privacy-focused, neural skill mapping.</p>
+          <h2 className="text-5xl font-black text-white text-center tracking-tight mb-4">Precision-First Hiring</h2>
+          <p className="text-slate-300 text-lg font-medium text-center max-w-2xl">Building the future of recruitment with privacy-focused, neural skill mapping.</p>
         </div>
-        
+
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((f, i) => (
             <FeatureCard key={i} icon={f.icon} title={f.title} desc={f.desc} delay={i * 0.1} />
@@ -215,7 +165,7 @@ export default function Landing() {
             {[
               { val: '200+', label: 'Unique Skills Detected', sub: 'Extracted via advanced NLP' },
               { val: '95%', label: 'Alignment Accuracy', sub: 'Verified by neural scoring' },
-              { val: '<3s', label: 'Processing Time', sub: 'Entirely offline & encrypted' },
+              { val: '<30s', label: 'Processing Time', sub: 'Entirely offline & encrypted' },
             ].map((s, i) => (
               <motion.div
                 key={i}
@@ -236,7 +186,7 @@ export default function Landing() {
 
       {/* Visual Tech Showcase */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 py-32">
-        <div className="bg-slate-900 rounded-[3rem] p-12 md:p-20 overflow-hidden relative shadow-2xl">
+        <div className="glass-premium bg-slate-100/90 rounded-[3rem] p-12 md:p-20 overflow-hidden relative shadow-2xl border border-white/20">
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
             <Cpu className="w-full h-full text-blue-400" />
           </div>
@@ -245,9 +195,9 @@ export default function Landing() {
               <div className="w-12 h-12 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center mb-8 border border-blue-400/20">
                 <Globe className="w-6 h-6" />
               </div>
-              <h2 className="text-5xl font-black text-white mb-8 tracking-tight leading-tight">Match Skills, <br/><span className="text-blue-500">Not Keywords.</span></h2>
-              <p className="text-slate-400 text-xl font-medium leading-relaxed mb-10">
-                TalentLens AI understands the nuance of technical experience by cross-referencing code commits, 
+              <h2 className="text-5xl font-black text-black mb-8 tracking-tight leading-tight">Match Skills, <br /><span className="text-blue-900">Not Keywords.</span></h2>
+              <p className="text-slate-800 text-xl font-medium leading-relaxed mb-10">
+                TalentLens AI understands the nuance of technical experience by cross-referencing code commits,
                 portfolios, and project history into a unified profile.
               </p>
               <div className="space-y-6">
@@ -256,10 +206,10 @@ export default function Landing() {
                   { t: 'Multi-Source Verify', d: 'Authenticates skills with live evidence.' }
                 ].map((item, i) => (
                   <div key={i} className="flex gap-5">
-                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-blue-400 font-black text-sm">0{i+1}</div>
+                    <div className="w-10 h-10 rounded-full bg-slate-900/5 border border-slate-900/10 flex items-center justify-center text-blue-900 font-black text-sm">0{i + 1}</div>
                     <div>
-                      <h4 className="font-black text-white text-lg">{item.t}</h4>
-                      <p className="text-slate-500 font-medium">{item.d}</p>
+                      <h4 className="font-black text-blue-900 text-lg">{item.t}</h4>
+                      <p className="text-slate-700 font-medium">{item.d}</p>
                     </div>
                   </div>
                 ))}
@@ -268,12 +218,12 @@ export default function Landing() {
             <div className="bg-white/5 p-4 rounded-[2.5rem] border border-white/10 backdrop-blur-md shadow-2xl group/card overflow-hidden">
               <div className="bg-white rounded-[2rem] p-10 shadow-2xl relative overflow-hidden">
                 {/* Simulated AI Scan Line */}
-                <motion.div 
+                <motion.div
                   animate={{ top: ['-10%', '110%'] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   className="absolute left-0 right-0 h-20 bg-gradient-to-b from-transparent via-blue-500/10 to-transparent pointer-events-none z-10"
                 />
-                
+
                 <div className="flex items-center gap-6 mb-10 relative z-20">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center text-3xl font-black shadow-lg shadow-blue-500/20">JD</div>
                   <div className="space-y-2">
@@ -287,18 +237,18 @@ export default function Landing() {
                     <span className="text-3xl font-black text-blue-600">92.4%</span>
                   </div>
                   <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden p-1">
-                    <motion.div 
+                    <motion.div
                       initial={{ width: 0 }}
                       whileInView={{ width: '92.4%' }}
                       transition={{ duration: 2, ease: "circOut" }}
-                      className="h-full bg-blue-600 rounded-full relative" 
+                      className="h-full bg-blue-600 rounded-full relative"
                     >
-                       <div className="absolute top-0 right-0 w-8 h-full bg-white/30 skew-x-12 animate-shimmer" />
+                      <div className="absolute top-0 right-0 w-8 h-full bg-white/30 skew-x-12 animate-shimmer" />
                     </motion.div>
                   </div>
                   <div className="flex gap-3 pt-4">
                     <div className="px-5 py-2.5 rounded-xl bg-blue-50 border border-blue-100 text-[10px] font-black uppercase text-blue-600 flex items-center gap-2">
-                       <Zap className="w-3 h-3" /> Neural Match
+                      <Zap className="w-3 h-3" /> Neural Match
                     </div>
                     <div className="px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-black uppercase text-slate-400">Verified</div>
                   </div>
@@ -325,8 +275,11 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 text-center py-8 text-slate-500 text-xs border-t border-slate-200">
-        © 2025 TalentLens AI · We don't match resumes — we match skills.
+      <footer className="relative z-10 text-center py-12 text-black text-xs border-t border-slate-200 bg-white/70 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-6">
+          <p className="mb-2 font-black text-blue-900">© 2026 TalentLens AI · We don't match resumes — we match skills.</p>
+          <p className="font-black uppercase tracking-[0.4em]">Developed by Team Byte-Core</p>
+        </div>
       </footer>
     </div>
   )

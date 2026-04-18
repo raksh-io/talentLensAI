@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { Eye, EyeOff, ArrowRight, User, Building2, Check, Chrome } from "lucide-react";
+import authBg from '@/assets/candidate_bg.png'
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from '../lib/supabaseClient'
 
@@ -233,60 +234,23 @@ export default function SignIn() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-8 relative overflow-hidden bg-[#0B0F1A]">
-      {/* Premium Animated Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Base Gradient Mash */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#1A1F36_0%,#0B0F1A_100%)] opacity-80" />
-        
-        {/* Animated Radial Glows */}
-        <motion.div 
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.05, 0.08, 0.05],
-            x: [0, 50, 0],
-            y: [0, -30, 0]
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[-10%] left-[-10%] w-[80%] h-[80%] rounded-full bg-[#3B82F6] blur-[120px]"
+    <div className="relative min-h-screen w-full flex items-center justify-center p-4 md:p-8 overflow-hidden bg-transparent">
+      {/* Premium Background Image */}
+      <div className="fixed inset-0 -z-30 pointer-events-none overflow-hidden bg-white">
+        <img 
+          src={authBg} 
+          className="w-full h-full object-cover opacity-80" 
+          alt="Background" 
         />
-        <motion.div 
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.04, 0.07, 0.04],
-            x: [0, -60, 0],
-            y: [0, 40, 0]
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute bottom-[-15%] right-[-5%] w-[70%] h-[70%] rounded-full bg-[#8B5CF6] blur-[140px]"
-        />
-
-        {/* Floating Blobs for Depth */}
-        <motion.div 
-          animate={{
-            y: [0, -40, 0],
-            x: [0, 20, 0],
-            opacity: [0.03, 0.06, 0.03]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[20%] left-[20%] w-[400px] h-[400px] rounded-full bg-[#3B82F6]/20 blur-[100px]"
-        />
-        <motion.div 
-          animate={{
-            y: [0, 50, 0],
-            x: [0, -30, 0],
-            opacity: [0.02, 0.05, 0.02]
-          }}
-          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut", delay: 5 }}
-          className="absolute bottom-[30%] right-[15%] w-[350px] h-[350px] rounded-full bg-[#8B5CF6]/20 blur-[120px]"
-        />
+        <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/20 via-transparent to-white/40" />
+        <div className="absolute inset-0 backdrop-blur-[2px]" />
       </div>
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-5xl h-full min-h-[640px] overflow-hidden rounded-[2rem] flex bg-white shadow-2xl border border-white/50 relative z-10"
+        className="w-full max-w-5xl h-full min-h-[640px] overflow-hidden rounded-[2rem] flex glass-premium relative z-10"
       >
         {/* Left side - Map & Branding */}
         <div className="hidden lg:block w-1/2 relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700">
@@ -336,7 +300,7 @@ export default function SignIn() {
         </div>
 
         {/* Right side - Form */}
-        <div className="w-full lg:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative bg-white">
+        <div className="w-full lg:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative bg-transparent">
           <AnimatePresence mode="wait">
             {step === 0 ? (
               <motion.div
